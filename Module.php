@@ -125,9 +125,9 @@ class Module extends AbstractModule
         $criteria = Criteria::create()->orderBy(['position' => Criteria::ASC]);
         foreach ($itemMedia->matching($criteria) as $media) {
             $mediaValues = $media->getValues();
-            $criteria = Criteria::create()->where(
-                Criteria::expr()->eq('property', $this->textProperty)
-            );
+            $criteria = Criteria::create()
+                ->where(Criteria::expr()->eq('property', $this->textProperty))
+                ->andWhere(Criteria::expr()->eq('type', 'literal'));
             foreach($mediaValues->matching($criteria) as $mediaValueTextProperty) {
                 $itemTexts[] = $mediaValueTextProperty->getValue();
             }
