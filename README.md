@@ -1,8 +1,18 @@
 # Extract Text
 
-Extract text from files to make them searchable.
+Extract text from files to make them searchable and machine readable.
 
-## Extracts Text from
+Once installed and active, this module has the following features:
+
+- The module adds an "extracted text" property where it sets extracted text to
+  media and items.
+- When adding a media, the module will automatically extract text from the file
+  and set the text to the media.
+- When adding or editing an item, the module will automatically aggregate the
+  media text (in order) and set the text to the item.
+- When batch updating items, the user can choose to refresh the extracted text.
+
+## Supported file formats:
 
 - DOC (application/msword)
 - DOCX (application/vnd.openxmlformats-officedocument.wordprocessingml.document)
@@ -11,7 +21,7 @@ Extract text from files to make them searchable.
 - RTF (application/rtf)
 - TXT (text/plain)
 
-## Extractors
+## Extractors:
 
 ### Catdoc
 
