@@ -119,7 +119,7 @@ class Module extends AbstractModule
             // The text property doesn't exist.
             return;
         }
-        $texts = [];
+        $itemTexts = [];
         $itemMedia = $item->getMedia();
         // Order by position in case the position was changed on this request.
         $criteria = Criteria::create()->orderBy(['position' => Criteria::ASC]);
@@ -129,10 +129,11 @@ class Module extends AbstractModule
                 Criteria::expr()->eq('property', $this->textProperty)
             );
             foreach($mediaValues->matching($criteria) as $mediaValueTextProperty) {
-                $texts[] = $mediaValueTextProperty->getValue();
+                $itemTexts[] = $mediaValueTextProperty->getValue();
             }
         }
-        $this->setTextPropertyValue($item, implode(PHP_EOL, $texts));
+        $itemText = trim(implode(PHP_EOL, $itemTexts));
+        $this->setTextPropertyValue($item, ('' === $itemText) ? null : $itemText);
     }
 
     /**
@@ -187,7 +188,11 @@ class Module extends AbstractModule
     /**
      * Set text as a text property value of a resource.
      *
+     * Clears all existing text property values from the resource before setting
+     * the value. Pass anything but a string to $text to just clear the values.
+     *
      * @param Resource $resource
+     * @param string $text
      */
     public function setTextPropertyValue(Resource $resource, $text)
     {
@@ -197,19 +202,21 @@ class Module extends AbstractModule
             return;
         }
         $resourceValues = $resource->getValues();
-        // First, clear all existing text property values from this resource.
+        // Clear values.
         $criteria = Criteria::create()->where(
             Criteria::expr()->eq('property', $textProperty)
         );
         foreach ($resourceValues->matching($criteria) as $resourceValueTextProperty) {
             $resourceValues->removeElement($resourceValueTextProperty);
         }
-        // Create and add the text property value.
-        $value = new Value;
-        $value->setResource($resource);
-        $value->setType('literal');
-        $value->setProperty($textProperty);
-        $value->setValue($text);
-        $resourceValues->add($value);
+        // Create and add the value.
+        if (is_string($text)) {
+            $value = new Value;
+            $value->setResource($resource);
+            $value->setType('literal');
+            $value->setProperty($textProperty);
+            $value->setValue($text);
+            $resourceValues->add($value);
+        }
     }
 }
