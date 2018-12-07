@@ -6,6 +6,7 @@ use Omeka\Entity\Item;
 use Omeka\Entity\Media;
 use Omeka\Entity\Resource;
 use Omeka\Entity\Value;
+use Omeka\File\Store\Local;
 use Omeka\Module\AbstractModule;
 use Zend\EventManager\Event;
 use Zend\EventManager\SharedEventManagerInterface;
@@ -54,7 +55,10 @@ class Module extends AbstractModule
 
     public function attachListeners(SharedEventManagerInterface $sharedEventManager)
     {
-        // Add text to media before ingesting the media file.
+        /**
+         * Before ingesting a media file, extract its text and set it to the
+         * media. This will only happen when creating the media.
+         */
         $sharedEventManager->attach(
             '*',
             'media.ingest_file.pre',
@@ -67,12 +71,58 @@ class Module extends AbstractModule
                 );
             }
         );
-        // Add aggregated text to an item after hydrating the item.
+        /**
+         * After hydrating an item, aggregate its media's text and set it to the
+         * item. This happens when creating and updating the item. Refreshes the
+         * media's text first if the "extract_text_refresh" flag is passed in
+         * the request.
+         */
         $sharedEventManager->attach(
             'Omeka\Api\Adapter\ItemAdapter',
             'api.hydrate.post',
             function (Event $event) {
-                $this->setTextToItem($event->getParam('entity'));
+                $item = $event->getParam('entity');
+                $data = $event->getParam('request')->getContent();
+                $refreshText = (isset($data['extract_text_refresh']) && $data['extract_text_refresh']);
+                $this->setTextToItem($item, $refreshText);
+            }
+        );
+        /**
+         * Add the "Extract text" checkbox to the resource batch update form.
+         */
+        $sharedEventManager->attach(
+            'Omeka\Form\ResourceBatchUpdateForm',
+            'form.add_elements',
+            function (Event $event) {
+                $form = $event->getTarget();
+                $form->add([
+                    'name' => 'extract_text_refresh',
+                    'type' => 'Zend\Form\Element\Checkbox',
+                    'options' => [
+                        'label' => 'Extract text', // @translate
+                    ],
+                    'attributes' => [
+                        'data-collection-action' => 'replace',
+                    ],
+                ]);
+            }
+        );
+        /**
+         * When preprocessing the batch update data, authorize the "extract_text
+         * _refresh" flag. This will signal the process to refresh the text
+         * while updating each item in the batch.
+         */
+        $sharedEventManager->attach(
+            'Omeka\Api\Adapter\ItemAdapter',
+            'api.preprocess_batch_update',
+            function (Event $event) {
+                $adapter = $event->getTarget();
+                $data = $event->getParam('data');
+                $rawData = $event->getParam('request')->getContent();
+                if (isset($rawData['extract_text_refresh'])) {
+                    $data['extract_text_refresh'] = (bool) $rawData['extract_text_batch'];
+                }
+                $event->setParam('data', $data);
             }
         );
     }
@@ -107,23 +157,27 @@ class Module extends AbstractModule
     /**
      * Aggregate text from child media and set it to their parent item.
      *
-     * @param string $filePath
-     * @param Media $media
-     * @param string $mediaType
-     * @return null|false
+     * @param Item $item
+     * @param bool $refreshText
      */
-    public function setTextToItem(Item $item)
+    public function setTextToItem(Item $item, $refreshText = false)
     {
         $textProperty = $this->getTextProperty();
         if (false === $textProperty) {
             // The text property doesn't exist.
             return;
         }
+        $store = $this->getServiceLocator()->get('Omeka\File\Store');
         $itemTexts = [];
         $itemMedia = $item->getMedia();
         // Order by position in case the position was changed on this request.
         $criteria = Criteria::create()->orderBy(['position' => Criteria::ASC]);
         foreach ($itemMedia->matching($criteria) as $media) {
+            // Files must be stored locally to refresh extracted text.
+            if ($refreshText && ($store instanceof Local)) {
+                $filePath = $store->getLocalPath(sprintf('original/%s', $media->getFilename()));
+                $this->setTextToMedia($filePath, $media);
+            }
             $mediaValues = $media->getValues();
             $criteria = Criteria::create()
                 ->where(Criteria::expr()->eq('property', $this->textProperty))
