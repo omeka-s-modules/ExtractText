@@ -137,6 +137,10 @@ class Module extends AbstractModule
      */
     public function setTextToMedia($filePath, Media $media, $mediaType = null)
     {
+        if (!@is_file($filePath)) {
+            // The file doesn't exist.
+            return false;
+        }
         $textProperty = $this->getTextProperty();
         if (false === $textProperty) {
             // The text property doesn't exist.
