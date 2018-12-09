@@ -105,16 +105,21 @@ class Module extends AbstractModule
             'form.add_elements',
             function (Event $event) {
                 $form = $event->getTarget();
+                $valueOptions = [
+                    'clear' => 'Clear text', // @translate
+                    '' => '[No action]', // @translate
+                ];
+                $store = $this->getServiceLocator()->get('Omeka\File\Store');
+                if ($store instanceof Local) {
+                    // Files must be stored locally to refresh extracted text.
+                    $valueOptions = ['refresh' => 'Refresh text'] + $valueOptions; // @translate
+                }
                 $form->add([
                     'name' => 'extract_text_action',
                     'type' => 'Zend\Form\Element\Radio',
                     'options' => [
                         'label' => 'Extract text', // @translate
-                        'value_options' => [
-                            'refresh' => 'Refresh text', // @translate
-                            'clear' => 'Clear text', // @translate
-                            '' => '[No action]', // @translate
-                        ],
+                        'value_options' => $valueOptions,
                     ],
                     'attributes' => [
                         'value' => '',
