@@ -98,7 +98,7 @@ class Module extends AbstractModule
             }
         );
         /**
-         * Add the ExtractText checkboxes to the resource batch update form.
+         * Add the ExtractText radio buttons to the resource batch update form.
          */
         $sharedEventManager->attach(
             'Omeka\Form\ResourceBatchUpdateForm',
@@ -129,8 +129,8 @@ class Module extends AbstractModule
             }
         );
         /**
-         * Don't require the ExtractText checkboxes in the resource batch update
-         * form.
+         * Don't require the ExtractText radio buttons in the resource batch
+         * update form.
          */
         $sharedEventManager->attach(
             'Omeka\Form\ResourceBatchUpdateForm',
@@ -236,7 +236,7 @@ class Module extends AbstractModule
             // Files must be stored locally to refresh extracted text.
             if (('refresh' === $action) && ($store instanceof Local)) {
                 $filePath = $store->getLocalPath(sprintf('original/%s', $media->getFilename()));
-                $this->setTextToMedia($filePath, $textProperty, $media);
+                $this->setTextToMedia($filePath, $media, $textProperty);
             }
             $mediaValues = $media->getValues();
             $criteria = Criteria::create()
@@ -295,11 +295,9 @@ class Module extends AbstractModule
      */
     public function setTextToTextProperty(Resource $resource, Property $textProperty, $text)
     {
-        $resourceValues = $resource->getValues();
         // Clear values.
-        $criteria = Criteria::create()->where(
-            Criteria::expr()->eq('property', $textProperty)
-        );
+        $criteria = Criteria::create()->where(Criteria::expr()->eq('property', $textProperty));
+        $resourceValues = $resource->getValues();
         foreach ($resourceValues->matching($criteria) as $resourceValueTextProperty) {
             $resourceValues->removeElement($resourceValueTextProperty);
         }
