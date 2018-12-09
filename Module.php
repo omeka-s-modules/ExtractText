@@ -83,12 +83,18 @@ class Module extends AbstractModule
             function (Event $event) {
                 $item = $event->getParam('entity');
                 $data = $event->getParam('request')->getContent();
-                $refreshText = (isset($data['extract_text_refresh']) && $data['extract_text_refresh']);
-                $this->setTextToItem($item, $refreshText);
+                if (isset($data['extract_text_refresh']) && $data['extract_text_refresh']) {
+                    $action = 'refresh';
+                } elseif (isset($data['extract_text_clear']) && $data['extract_text_clear']) {
+                    $action = 'clear';
+                } else {
+                    $action = 'default';
+                }
+                $this->setTextToItem($item, $action);
             }
         );
         /**
-         * Add the "Extract text" checkbox to the resource batch update form.
+         * Add the ExtractText checkboxes to the resource batch update form.
          */
         $sharedEventManager->attach(
             'Omeka\Form\ResourceBatchUpdateForm',
@@ -105,11 +111,21 @@ class Module extends AbstractModule
                         'data-collection-action' => 'replace',
                     ],
                 ]);
+                $form->add([
+                    'name' => 'extract_text_clear',
+                    'type' => 'Zend\Form\Element\Checkbox',
+                    'options' => [
+                        'label' => 'Clear extracted text', // @translate
+                    ],
+                    'attributes' => [
+                        'data-collection-action' => 'replace',
+                    ],
+                ]);
             }
         );
         /**
-         * When preprocessing the batch update data, authorize the "extract_text
-         * _refresh" flag. This will signal the process to refresh the text
+         * When preprocessing the batch update data, authorize the ExtractText
+         * flags. This will signal the process to refresh or clear the text
          * while updating each item in the batch.
          */
         $sharedEventManager->attach(
@@ -120,7 +136,9 @@ class Module extends AbstractModule
                 $data = $event->getParam('data');
                 $rawData = $event->getParam('request')->getContent();
                 if (isset($rawData['extract_text_refresh'])) {
-                    $data['extract_text_refresh'] = (bool) $rawData['extract_text_batch'];
+                    $data['extract_text_refresh'] = (bool) $rawData['extract_text_refresh'];
+                } elseif (isset($rawData['extract_text_clear'])) {
+                    $data['extract_text_clear'] = (bool) $rawData['extract_text_clear'];
                 }
                 $event->setParam('data', $data);
             }
@@ -128,7 +146,7 @@ class Module extends AbstractModule
     }
 
     /**
-     * Extract text from a file and set it to a media.
+     * Set extracted text to a media.
      *
      * @param string $filePath
      * @param Media $media
@@ -159,12 +177,18 @@ class Module extends AbstractModule
     }
 
     /**
-     * Aggregate text from child media and set it to their parent item.
+     * Set extracted text to an item.
+     *
+     * There are three actions this method can perform:
+     *
+     * - default: aggregates text from child media and set it to the item.
+     * - refresh: same as default but (re)extracts text from files first.
+     * - clear: clears all extracted text from item and child media.
      *
      * @param Item $item
-     * @param bool $refreshText
+     * @param string $action default|refresh|clear
      */
-    public function setTextToItem(Item $item, $refreshText = false)
+    public function setTextToItem(Item $item, $action = 'default')
     {
         $textProperty = $this->getTextProperty();
         if (false === $textProperty) {
@@ -178,7 +202,7 @@ class Module extends AbstractModule
         $criteria = Criteria::create()->orderBy(['position' => Criteria::ASC]);
         foreach ($itemMedia->matching($criteria) as $media) {
             // Files must be stored locally to refresh extracted text.
-            if ($refreshText && ($store instanceof Local)) {
+            if (('refresh' === $action) && ($store instanceof Local)) {
                 $filePath = $store->getLocalPath(sprintf('original/%s', $media->getFilename()));
                 $this->setTextToMedia($filePath, $media);
             }
@@ -187,7 +211,11 @@ class Module extends AbstractModule
                 ->where(Criteria::expr()->eq('property', $this->textProperty))
                 ->andWhere(Criteria::expr()->eq('type', 'literal'));
             foreach($mediaValues->matching($criteria) as $mediaValueTextProperty) {
-                $itemTexts[] = $mediaValueTextProperty->getValue();
+                if ('clear' === $action) {
+                    $mediaValues->removeElement($mediaValueTextProperty);
+                } else {
+                    $itemTexts[] = $mediaValueTextProperty->getValue();
+                }
             }
         }
         $itemText = trim(implode(PHP_EOL, $itemTexts));
