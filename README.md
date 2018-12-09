@@ -10,7 +10,8 @@ Once installed and active, this module has the following features:
   and set the text to the media.
 - When adding or editing an item, the module will automatically aggregate the
   media text (in order) and set the text to the item.
-- When batch updating items, the user can choose to refresh the extracted text.
+- When batch updating items, the user can choose to refresh or clear the
+  extracted text.
 
 ## Supported file formats:
 
