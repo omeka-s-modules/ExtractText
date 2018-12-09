@@ -4,6 +4,7 @@ namespace ExtractText;
 use Doctrine\Common\Collections\Criteria;
 use Omeka\Entity\Item;
 use Omeka\Entity\Media;
+use Omeka\Entity\Property;
 use Omeka\Entity\Resource;
 use Omeka\Entity\Value;
 use Omeka\File\Store\Local;
@@ -63,10 +64,15 @@ class Module extends AbstractModule
             '*',
             'media.ingest_file.pre',
             function (Event $event) {
+                $textProperty = $this->getTextProperty();
+                if (false === $textProperty) {
+                    return; // The text property doesn't exist. Do nothing.
+                }
                 $tempFile = $event->getParam('tempFile');
                 $this->setTextToMedia(
                     $tempFile->getTempPath(),
                     $event->getTarget(),
+                    $textProperty,
                     $tempFile->getMediaType()
                 );
             }
@@ -81,10 +87,14 @@ class Module extends AbstractModule
             'Omeka\Api\Adapter\ItemAdapter',
             'api.hydrate.post',
             function (Event $event) {
+                $textProperty = $this->getTextProperty();
+                if (false === $textProperty) {
+                    return; // The text property doesn't exist. Do nothing.
+                }
                 $item = $event->getParam('entity');
                 $data = $event->getParam('request')->getContent();
                 $action = isset($data['extract_text_action']) ? $data['extract_text_action'] : 'default';
-                $this->setTextToItem($item, $action);
+                $this->setTextToItem($item, $textProperty, $action);
             }
         );
         /**
@@ -151,83 +161,6 @@ class Module extends AbstractModule
     }
 
     /**
-     * Set extracted text to a media.
-     *
-     * @param string $filePath
-     * @param Media $media
-     * @param string $mediaType
-     * @return null|false
-     */
-    public function setTextToMedia($filePath, Media $media, $mediaType = null)
-    {
-        if (!@is_file($filePath)) {
-            // The file doesn't exist.
-            return false;
-        }
-        $textProperty = $this->getTextProperty();
-        if (false === $textProperty) {
-            // The text property doesn't exist.
-            return false;
-        }
-        if (null === $mediaType) {
-            // Fall back on the media type set to the media.
-            $mediaType = $media->getMediaType();
-        }
-        $text = $this->extractText($filePath, $mediaType);
-        if (false === $text) {
-            // Could not extract text from the file.
-            return false;
-        }
-        $this->setTextPropertyValue($media, $text);
-    }
-
-    /**
-     * Set extracted text to an item.
-     *
-     * There are three actions this method can perform:
-     *
-     * - default: aggregates text from child media and set it to the item.
-     * - refresh: same as default but (re)extracts text from files first.
-     * - clear: clears all extracted text from item and child media.
-     *
-     * @param Item $item
-     * @param string $action default|refresh|clear
-     */
-    public function setTextToItem(Item $item, $action = 'default')
-    {
-        $textProperty = $this->getTextProperty();
-        if (false === $textProperty) {
-            // The text property doesn't exist.
-            return;
-        }
-        $store = $this->getServiceLocator()->get('Omeka\File\Store');
-        $itemTexts = [];
-        $itemMedia = $item->getMedia();
-        // Order by position in case the position was changed on this request.
-        $criteria = Criteria::create()->orderBy(['position' => Criteria::ASC]);
-        foreach ($itemMedia->matching($criteria) as $media) {
-            // Files must be stored locally to refresh extracted text.
-            if (('refresh' === $action) && ($store instanceof Local)) {
-                $filePath = $store->getLocalPath(sprintf('original/%s', $media->getFilename()));
-                $this->setTextToMedia($filePath, $media);
-            }
-            $mediaValues = $media->getValues();
-            $criteria = Criteria::create()
-                ->where(Criteria::expr()->eq('property', $this->textProperty))
-                ->andWhere(Criteria::expr()->eq('type', 'literal'));
-            foreach($mediaValues->matching($criteria) as $mediaValueTextProperty) {
-                if ('clear' === $action) {
-                    $mediaValues->removeElement($mediaValueTextProperty);
-                } else {
-                    $itemTexts[] = $mediaValueTextProperty->getValue();
-                }
-            }
-        }
-        $itemText = trim(implode(PHP_EOL, $itemTexts));
-        $this->setTextPropertyValue($item, ('' === $itemText) ? null : $itemText);
-    }
-
-    /**
      * Get the text property, caching on first pass.
      *
      * @return Omeka\Entity\Property|false
@@ -249,6 +182,75 @@ class Module extends AbstractModule
         ])->getOneOrNullResult();
         $this->textProperty = (null === $textProperty) ? false : $textProperty;
         return $this->textProperty;
+    }
+
+    /**
+     * Set extracted text to a media.
+     *
+     * @param string $filePath
+     * @param Media $media
+     * @param Property $textProperty
+     * @param string $mediaType
+     * @return null|false
+     */
+    public function setTextToMedia($filePath, Media $media, Property $textProperty, $mediaType = null)
+    {
+        if (!@is_file($filePath)) {
+            // The file doesn't exist.
+            return false;
+        }
+        if (null === $mediaType) {
+            // Fall back on the media type set to the media.
+            $mediaType = $media->getMediaType();
+        }
+        $text = $this->extractText($filePath, $mediaType);
+        if (false === $text) {
+            // Could not extract text from the file.
+            return false;
+        }
+        $this->setTextToTextProperty($media, $textProperty, $text);
+    }
+
+    /**
+     * Set extracted text to an item.
+     *
+     * There are three actions this method can perform:
+     *
+     * - default: aggregates text from child media and set it to the item.
+     * - refresh: same as default but (re)extracts text from files first.
+     * - clear: clears all extracted text from item and child media.
+     *
+     * @param Item $item
+     * @param Property $textProperty
+     * @param string $action default|refresh|clear
+     */
+    public function setTextToItem(Item $item, Property $textProperty, $action = 'default')
+    {
+        $store = $this->getServiceLocator()->get('Omeka\File\Store');
+        $itemTexts = [];
+        $itemMedia = $item->getMedia();
+        // Order by position in case the position was changed on this request.
+        $criteria = Criteria::create()->orderBy(['position' => Criteria::ASC]);
+        foreach ($itemMedia->matching($criteria) as $media) {
+            // Files must be stored locally to refresh extracted text.
+            if (('refresh' === $action) && ($store instanceof Local)) {
+                $filePath = $store->getLocalPath(sprintf('original/%s', $media->getFilename()));
+                $this->setTextToMedia($filePath, $textProperty, $media);
+            }
+            $mediaValues = $media->getValues();
+            $criteria = Criteria::create()
+                ->where(Criteria::expr()->eq('property', $textProperty))
+                ->andWhere(Criteria::expr()->eq('type', 'literal'));
+            foreach($mediaValues->matching($criteria) as $mediaValueTextProperty) {
+                if ('clear' === $action) {
+                    $mediaValues->removeElement($mediaValueTextProperty);
+                } else {
+                    $itemTexts[] = $mediaValueTextProperty->getValue();
+                }
+            }
+        }
+        $itemText = trim(implode(PHP_EOL, $itemTexts));
+        $this->setTextToTextProperty($item, $textProperty, ('' === $itemText) ? null : $itemText);
     }
 
     /**
@@ -283,15 +285,11 @@ class Module extends AbstractModule
      * the value. Pass anything but a string to $text to just clear the values.
      *
      * @param Resource $resource
+     * @param Property $textProperty
      * @param string $text
      */
-    public function setTextPropertyValue(Resource $resource, $text)
+    public function setTextToTextProperty(Resource $resource, Property $textProperty, $text)
     {
-        $textProperty = $this->getTextProperty();
-        if (false === $textProperty) {
-            // The text property doesn't exist.
-            return;
-        }
         $resourceValues = $resource->getValues();
         // Clear values.
         $criteria = Criteria::create()->where(
