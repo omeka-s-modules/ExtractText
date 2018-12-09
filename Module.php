@@ -83,13 +83,7 @@ class Module extends AbstractModule
             function (Event $event) {
                 $item = $event->getParam('entity');
                 $data = $event->getParam('request')->getContent();
-                if (isset($data['extract_text_refresh']) && $data['extract_text_refresh']) {
-                    $action = 'refresh';
-                } elseif (isset($data['extract_text_clear']) && $data['extract_text_clear']) {
-                    $action = 'clear';
-                } else {
-                    $action = 'default';
-                }
+                $action = isset($data['extract_text_action']) ? $data['extract_text_action'] : 'default';
                 $this->setTextToItem($item, $action);
             }
         );
@@ -102,31 +96,42 @@ class Module extends AbstractModule
             function (Event $event) {
                 $form = $event->getTarget();
                 $form->add([
-                    'name' => 'extract_text_refresh',
-                    'type' => 'Zend\Form\Element\Checkbox',
+                    'name' => 'extract_text_action',
+                    'type' => 'Zend\Form\Element\Radio',
                     'options' => [
                         'label' => 'Extract text', // @translate
+                        'value_options' => [
+                            'refresh' => 'Refresh text', // @translate
+                            'clear' => 'Clear text', // @translate
+                            '' => '[No action]', // @translate
+                        ],
                     ],
                     'attributes' => [
-                        'data-collection-action' => 'replace',
-                    ],
-                ]);
-                $form->add([
-                    'name' => 'extract_text_clear',
-                    'type' => 'Zend\Form\Element\Checkbox',
-                    'options' => [
-                        'label' => 'Clear extracted text', // @translate
-                    ],
-                    'attributes' => [
+                        'value' => '',
                         'data-collection-action' => 'replace',
                     ],
                 ]);
             }
         );
         /**
-         * When preprocessing the batch update data, authorize the ExtractText
-         * flags. This will signal the process to refresh or clear the text
-         * while updating each item in the batch.
+         * Don't require the ExtractText checkboxes in the resource batch update
+         * form.
+         */
+        $sharedEventManager->attach(
+            'Omeka\Form\ResourceBatchUpdateForm',
+            'form.add_input_filters',
+            function (Event $event) {
+                $inputFilter = $event->getParam('inputFilter');
+                $inputFilter->add([
+                    'name' => 'extract_text_action',
+                    'required' => false,
+                ]);
+            }
+        );
+        /**
+         * When preprocessing the batch update data, authorize the "extract_text
+         * _action" key. This will signal the process to refresh or clear the
+         * text while updating each item in the batch.
          */
         $sharedEventManager->attach(
             'Omeka\Api\Adapter\ItemAdapter',
@@ -135,10 +140,10 @@ class Module extends AbstractModule
                 $adapter = $event->getTarget();
                 $data = $event->getParam('data');
                 $rawData = $event->getParam('request')->getContent();
-                if (isset($rawData['extract_text_refresh'])) {
-                    $data['extract_text_refresh'] = (bool) $rawData['extract_text_refresh'];
-                } elseif (isset($rawData['extract_text_clear'])) {
-                    $data['extract_text_clear'] = (bool) $rawData['extract_text_clear'];
+                if (isset($rawData['extract_text_action'])
+                    && in_array($rawData['extract_text_action'], ['refresh', 'clear'])
+                ) {
+                    $data['extract_text_action'] = $rawData['extract_text_action'];
                 }
                 $event->setParam('data', $data);
             }
