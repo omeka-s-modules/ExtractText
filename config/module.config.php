@@ -5,16 +5,23 @@ return [
             'ExtractText\ExtractorManager' => ExtractText\Service\Extractor\ManagerFactory::class,
         ],
     ],
-    'text_extractors' => [
+    'extract_text_extractors' => [
         'factories' => [
-            'text/html' => ExtractText\Service\Extractor\LynxFactory::class,
-            'application/pdf' => ExtractText\Service\Extractor\PdftotextFactory::class,
-            'application/rtf' => ExtractText\Service\Extractor\CatdocFactory::class,
-            'application/msword' => ExtractText\Service\Extractor\CatdocFactory::class,
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => ExtractText\Service\Extractor\Docx2txtFactory::class,
+            'catdoc' => ExtractText\Service\Extractor\CatdocFactory::class,
+            'docx2txt' => ExtractText\Service\Extractor\Docx2txtFactory::class,
+            'lynx' => ExtractText\Service\Extractor\LynxFactory::class,
+            'pdftotext' => ExtractText\Service\Extractor\PdftotextFactory::class,
         ],
         'invokables' => [
-            'text/plain' => ExtractText\Extractor\Filegetcontents::class,
-        ]
+            'filegetcontents' => ExtractText\Extractor\Filegetcontents::class,
+        ],
+        'aliases' => [
+            'application/msword' => 'catdoc',
+            'application/pdf' => 'pdftotext',
+            'application/rtf' => 'catdoc',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx2txt',
+            'text/html' => 'lynx',
+            'text/plain' => 'filegetcontents',
+        ],
     ],
 ];
