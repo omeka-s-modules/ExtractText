@@ -195,10 +195,6 @@ class Module extends AbstractModule
      */
     public function setTextToMedia($filePath, Media $media, Property $textProperty, $mediaType = null)
     {
-        if (!@is_file($filePath)) {
-            // The file doesn't exist.
-            return false;
-        }
         if (null === $mediaType) {
             // Fall back on the media type set to the media.
             $mediaType = $media->getMediaType();
@@ -263,6 +259,10 @@ class Module extends AbstractModule
      */
     public function extractText($filePath, $mediaType = null, array $options = [])
     {
+        if (!@is_file($filePath)) {
+            // The file doesn't exist.
+            return false;
+        }
         if (null === $mediaType) {
             // Fall back on PHP's magic.mime file.
             $mediaType = mime_content_type($filePath);
