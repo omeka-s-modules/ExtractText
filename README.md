@@ -12,6 +12,8 @@ Once installed and active, this module has the following features:
   media text (in order) and set the text to the item.
 - When batch updating items, the user can choose to refresh or clear the
   extracted text.
+- The user can view the module configuration page to see which extractors are
+  available on their system.
 
 ## Supported file formats:
 
@@ -53,7 +55,7 @@ a part of the poppler-utils package.
 ## Disabling text extraction
 
 You can disable text extraction for a specific media type by setting the media
-type alias to `null` in the `extract_text_extractors` service config in your
+type alias to `null` in the "extract_text_extractors" service config in your
 local configuration file (config/local.config.php). For example, if you want to
 disable extraction for TXT (text/plain) files, add the following:
 
