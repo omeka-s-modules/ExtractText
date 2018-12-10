@@ -29,9 +29,9 @@ Once installed and active, this module has the following features:
 
 Used to extract text from DOC and RTF files. Requires [catdoc](https://linux.die.net/man/1/catdoc).
 
-### Doc2txt
+### Docx2txt
 
-Used to extract text from DOCX files. Requires [doc2txt](http://docx2txt.sourceforge.net/).
+Used to extract text from DOCX files. Requires [docx2txt](http://docx2txt.sourceforge.net/).
 
 ### Filegetcontents
 
