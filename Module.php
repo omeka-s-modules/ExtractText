@@ -310,7 +310,11 @@ class Module extends AbstractModule
             // No extractor assigned to the media type.
             return false;
         }
-        // Extractors should return false if they cannot extract text.
+        if (!$extractor->isAvailable()) {
+            // The extractor is unavailable.
+            return false;
+        }
+        // extract() should return false if it cannot extract text.
         return $extractor->extract($filePath, $options);
     }
 
