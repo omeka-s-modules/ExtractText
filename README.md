@@ -49,3 +49,18 @@ Used to extract text from ODT files. Requires [odt2txt](https://linux.die.net/ma
 
 Used to extract text from PDF files. Requires [pdftotext](https://linux.die.net/man/1/pdftotext),
 a part of the poppler-utils package.
+
+## Disabling text extraction
+
+You can disable text extraction for a specific media type by setting the media
+type to `null` in the extract_text_extractors service configuration in your
+local config file (config/local.config.php). For example, if you want to disable
+extraction for TXT (text/plain) files, add the following:
+
+```php
+'extract_text_extractors' => [
+    'aliases' => [
+        'text/plain' => null,
+    ],
+],
+```
