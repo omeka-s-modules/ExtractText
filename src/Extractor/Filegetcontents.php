@@ -8,6 +8,11 @@ namespace ExtractText\Extractor;
  */
 class Filegetcontents implements ExtractorInterface
 {
+    public function isAvailable()
+    {
+        return true;
+    }
+
     public function extract($filePath, array $options = [])
     {
         $offset = isset($options['offset']) ? $options['offset'] : 0;

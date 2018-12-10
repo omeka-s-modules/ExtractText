@@ -17,6 +17,11 @@ class Docx2txt implements ExtractorInterface
         $this->cli = $cli;
     }
 
+    public function isAvailable()
+    {
+        return (bool) $this->cli->getCommandPath('docx2txt');
+    }
+
     public function extract($filePath, array $options = [])
     {
         $commandPath = $this->cli->getCommandPath('docx2txt');

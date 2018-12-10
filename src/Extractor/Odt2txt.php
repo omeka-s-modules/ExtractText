@@ -17,6 +17,11 @@ class Odt2txt implements ExtractorInterface
         $this->cli = $cli;
     }
 
+    public function isAvailable()
+    {
+        return (bool) $this->cli->getCommandPath('odt2txt');
+    }
+
     public function extract($filePath, array $options = [])
     {
         $commandPath = $this->cli->getCommandPath('odt2txt');

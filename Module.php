@@ -13,6 +13,7 @@ use Zend\EventManager\Event;
 use Zend\EventManager\SharedEventManagerInterface;
 use Zend\ServiceManager\Exception\ServiceNotFoundException;
 use Zend\ServiceManager\ServiceLocatorInterface;
+use Zend\View\Renderer\PhpRenderer;
 
 class Module extends AbstractModule
 {
@@ -52,6 +53,35 @@ class Module extends AbstractModule
                 ]
             );
         }
+    }
+
+    public function getConfigForm(PhpRenderer $view)
+    {
+        $extractors = $this->getServiceLocator()->get('ExtractText\ExtractorManager');
+        $html = '
+        <table class="tablesaw tablesaw-stack">
+            <thead>
+            <tr>
+                <th>' . $view->translate('Extractor') . '</th>
+                <th>' . $view->translate('Available') . '</th>
+            </tr>
+            </thead>
+            <tbody>';
+        foreach ($extractors->getRegisteredNames() as $extractorName) {
+            $extractor = $extractors->get($extractorName);
+            $isAvailable = $extractor->isAvailable()
+                ? sprintf('<span style="color: green;">%s</span>', $view->translate('Yes'))
+                : sprintf('<span style="color: red;">%s</span>', $view->translate('No'));
+            $html .= sprintf('
+            <tr>
+                <td>%s</td>
+                <td>%s</td>
+            </tr>', $extractorName, $isAvailable);
+        }
+        $html .= '
+            </tbody>
+        </table>';
+        return $html;
     }
 
     public function attachListeners(SharedEventManagerInterface $sharedEventManager)

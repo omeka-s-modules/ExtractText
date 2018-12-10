@@ -7,6 +7,13 @@ namespace ExtractText\Extractor;
 interface ExtractorInterface
 {
     /**
+     * Is this extractor available?
+     *
+     * @return bool
+     */
+    public function isAvailable();
+
+    /**
      * Extract text from a file.
      *
      * Returns the extracted text of the file or false if the extractor could
