@@ -18,6 +18,7 @@ Once installed and active, this module has the following features:
 - DOC (application/msword)
 - DOCX (application/vnd.openxmlformats-officedocument.wordprocessingml.document)
 - HTML (text/html)
+- ODT (application/vnd.oasis.opendocument.text)
 - PDF (application/pdf)
 - RTF (application/rtf)
 - TXT (text/plain)
@@ -39,6 +40,10 @@ Used to extract text from TXT files. No requirements.
 ### Lynx
 
 Used to extract text from HTML files. Requires [lynx](https://linux.die.net/man/1/lynx).
+
+### Odt2txt
+
+Used to extract text from ODT files. Requires [odt2txt](https://linux.die.net/man/1/odt2txt).
 
 ### Pdftotext
 
