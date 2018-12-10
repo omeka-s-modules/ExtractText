@@ -239,7 +239,8 @@ class Module extends AbstractModule
             // Could not extract text from the file.
             return false;
         }
-        $this->setTextToTextProperty($media, $textProperty, $text);
+        $text = trim($text);
+        $this->setTextToTextProperty($media, $textProperty, ('' === $text) ? null : $text);
     }
 
     /**
