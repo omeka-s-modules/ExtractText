@@ -53,9 +53,9 @@ a part of the poppler-utils package.
 ## Disabling text extraction
 
 You can disable text extraction for a specific media type by setting the media
-type to `null` in the extract_text_extractors service configuration in your
-local config file (config/local.config.php). For example, if you want to disable
-extraction for TXT (text/plain) files, add the following:
+type alias to `null` in the `extract_text_extractors` service config in your
+local configuration file (config/local.config.php). For example, if you want to
+disable extraction for TXT (text/plain) files, add the following:
 
 ```php
 'extract_text_extractors' => [
