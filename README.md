@@ -47,4 +47,5 @@ Used to extract text from ODT files. Requires [odt2txt](https://linux.die.net/ma
 
 ### Pdftotext
 
-Used to extract text from PDF files. Requires [pdftotext](https://linux.die.net/man/1/pdftotext).
+Used to extract text from PDF files. Requires [pdftotext](https://linux.die.net/man/1/pdftotext),
+a part of the poppler-utils package.
