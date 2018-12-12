@@ -193,6 +193,56 @@ class Module extends AbstractModule
                 $event->setParam('data', $data);
             }
         );
+        /**
+         * Add an "Extract text" tab to the item edit page.
+         */
+        $sharedEventManager->attach(
+            'Omeka\Controller\Admin\Item',
+            'view.edit.section_nav',
+            function (Event $event) {
+                $view = $event->getTarget();
+                $sectionNavs = $event->getParam('section_nav');
+                $sectionNavs['extract-text'] = $view->translate('Extract text');
+                $event->setParam('section_nav', $sectionNavs);
+            }
+        );
+        /**
+         * Add an "Extract text" section to the item edit page.
+         */
+        $sharedEventManager->attach(
+            'Omeka\Controller\Admin\Item',
+            'view.edit.form.after',
+            function (Event $event) {
+                $view = $event->getTarget();
+                $store = $this->getServiceLocator()->get('Omeka\File\Store');
+                $refreshRadioButton = null;
+                if ($store instanceof Local) {
+                    // Files must be stored locally to refresh extracted text.
+                    $refreshRadioButton = sprintf(
+                        '<label><input type="radio" name="extract_text_action" value="refresh">%s</label>',
+                        $view->translate('Refresh text')
+                    );
+                }
+                $html = sprintf('
+                <div id="extract-text" class="section">
+                    <div class="field">
+                        <div class="field-meta">
+                            <label for="extract_text_action">%s</label>
+                        </div>
+                        <div class="inputs">
+                            %s
+                            <label><input type="radio" name="extract_text_action" value="clear">%s</label>
+                            <label><input type="radio" name="extract_text_action" value="" checked="checked">%s</label>
+                        </div>
+                    </div>
+                </div>',
+                $view->translate('Extract text'),
+                $refreshRadioButton,
+                $view->translate('Clear text'),
+                $view->translate('[No action]'));
+                echo $html;
+            }
+        );
     }
 
     /**

@@ -10,8 +10,8 @@ Once installed and active, this module has the following features:
   and set the text to the media.
 - When adding or editing an item, the module will automatically aggregate the
   media text (in order) and set the text to the item.
-- When batch updating items, the user can choose to refresh or clear the
-  extracted text.
+- When editing an item or batch editing items, the user can choose to refresh or
+  clear the extracted text.
 - The user can view the module configuration page to see which extractors are
   available on their system.
 
@@ -24,6 +24,9 @@ Once installed and active, this module has the following features:
 - PDF (application/pdf)
 - RTF (application/rtf)
 - TXT (text/plain)
+
+Note that some file extensions or media types may be disallowed in your global
+settings.
 
 ## Extractors:
 
