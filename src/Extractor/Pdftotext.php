@@ -30,10 +30,10 @@ class Pdftotext implements ExtractorInterface
         }
         $commandArgs = [$commandPath, '-enc UTF-8'];
         if (isset($options['f'])) {
-            $commandArgs[] = sprinf('-f %s', escapeshellarg($options['f']));
+            $commandArgs[] = sprintf('-f %s', escapeshellarg($options['f']));
         }
         if (isset($options['l'])) {
-            $commandArgs[] = sprinf('-l %s', escapeshellarg($options['l']));
+            $commandArgs[] = sprintf('-l %s', escapeshellarg($options['l']));
         }
         $commandArgs[] = escapeshellarg($filePath);
         $commandArgs[] = '-';
