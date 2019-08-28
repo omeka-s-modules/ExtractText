@@ -386,6 +386,11 @@ class Module extends AbstractModule
         foreach ($resourceValues->matching($criteria) as $resourceValueTextProperty) {
             $resourceValues->removeElement($resourceValueTextProperty);
         }
+        // Use a property reference to avoid Doctrine's "A new entity was found"
+        // error during batch operations.
+        $textProperty = $this->getServiceLocator()
+            ->get('Omeka\EntityManager')
+            ->getReference('Omeka\Entity\Property', $textProperty->getId());
         // Create and add the value.
         if (is_string($text)) {
             $value = new Value;
