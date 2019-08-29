@@ -380,10 +380,12 @@ class Module extends AbstractModule
      */
     public function setTextToTextProperty(Resource $resource, Property $textProperty, $text)
     {
+        $isPublic = true;
         // Clear values.
         $criteria = Criteria::create()->where(Criteria::expr()->eq('property', $textProperty));
         $resourceValues = $resource->getValues();
         foreach ($resourceValues->matching($criteria) as $resourceValueTextProperty) {
+            $isPublic = $resourceValueTextProperty->getIsPublic();
             $resourceValues->removeElement($resourceValueTextProperty);
         }
         // Use a property reference to avoid Doctrine's "A new entity was found"
@@ -398,6 +400,7 @@ class Module extends AbstractModule
             $value->setType('literal');
             $value->setProperty($textProperty);
             $value->setValue($text);
+            $value->setIsPublic($isPublic);
             $resourceValues->add($value);
         }
     }
