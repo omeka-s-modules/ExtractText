@@ -9,11 +9,11 @@ use Omeka\Entity\Resource;
 use Omeka\Entity\Value;
 use Omeka\File\Store\Local;
 use Omeka\Module\AbstractModule;
-use Zend\EventManager\Event;
-use Zend\EventManager\SharedEventManagerInterface;
-use Zend\ServiceManager\Exception\ServiceNotFoundException;
-use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\View\Renderer\PhpRenderer;
+use Laminas\EventManager\Event;
+use Laminas\EventManager\SharedEventManagerInterface;
+use Laminas\ServiceManager\Exception\ServiceNotFoundException;
+use Laminas\ServiceManager\ServiceLocatorInterface;
+use Laminas\View\Renderer\PhpRenderer;
 
 class Module extends AbstractModule
 {
@@ -146,7 +146,7 @@ class Module extends AbstractModule
                 }
                 $form->add([
                     'name' => 'extract_text_action',
-                    'type' => 'Zend\Form\Element\Radio',
+                    'type' => 'Laminas\Form\Element\Radio',
                     'options' => [
                         'label' => 'Extract text', // @translate
                         'value_options' => $valueOptions,

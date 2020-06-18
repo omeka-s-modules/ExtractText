@@ -2,7 +2,7 @@
 namespace ExtractText\Service\Extractor;
 
 use ExtractText\Extractor\Lynx;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Laminas\ServiceManager\Factory\FactoryInterface;
 use Interop\Container\ContainerInterface;
 
 class LynxFactory implements FactoryInterface

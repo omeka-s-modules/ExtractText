@@ -3,7 +3,7 @@ namespace ExtractText\Service\Extractor;
 
 use ExtractText\Extractor\Manager;
 use Interop\Container\ContainerInterface;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Laminas\ServiceManager\Factory\FactoryInterface;
 
 class ManagerFactory implements FactoryInterface
 {
