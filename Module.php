@@ -45,7 +45,7 @@ class Module extends AbstractModule
                     'o:namespace_uri' => 'http://omeka.org/s/vocabs/o-module-extracttext#',
                     'o:prefix' => 'extracttext',
                     'o:label' => 'Extract Text',
-                    'o:comment' =>  null,
+                    'o:comment' => null,
                 ],
                 [
                     'file' => __DIR__ . '/vocabs/extracttext.n3',
@@ -86,7 +86,7 @@ class Module extends AbstractModule
 
     public function attachListeners(SharedEventManagerInterface $sharedEventManager)
     {
-        /**
+        /*
          * Before ingesting a media file, extract its text and set it to the
          * media. This will only happen when creating the media.
          */
@@ -107,7 +107,7 @@ class Module extends AbstractModule
                 );
             }
         );
-        /**
+        /*
          * After hydrating an item, aggregate its media's text and set it to the
          * item. This happens when creating and updating the item. Refreshes the
          * media's text first if the "extract_text_refresh" flag is passed in
@@ -127,7 +127,7 @@ class Module extends AbstractModule
                 $this->setTextToItem($item, $textProperty, $action);
             }
         );
-        /**
+        /*
          * Add the ExtractText radio buttons to the resource batch update form.
          */
         $sharedEventManager->attach(
@@ -158,7 +158,7 @@ class Module extends AbstractModule
                 ]);
             }
         );
-        /**
+        /*
          * Don't require the ExtractText radio buttons in the resource batch
          * update form.
          */
@@ -173,7 +173,7 @@ class Module extends AbstractModule
                 ]);
             }
         );
-        /**
+        /*
          * When preprocessing the batch update data, authorize the "extract_text
          * _action" key. This will signal the process to refresh or clear the
          * text while updating each item in the batch.
@@ -193,7 +193,7 @@ class Module extends AbstractModule
                 $event->setParam('data', $data);
             }
         );
-        /**
+        /*
          * Add an "Extract text" tab to the item edit page.
          */
         $sharedEventManager->attach(
@@ -206,7 +206,7 @@ class Module extends AbstractModule
                 $event->setParam('section_nav', $sectionNavs);
             }
         );
-        /**
+        /*
          * Add an "Extract text" section to the item edit page.
          */
         $sharedEventManager->attach(
@@ -323,7 +323,7 @@ class Module extends AbstractModule
             $criteria = Criteria::create()
                 ->where(Criteria::expr()->eq('property', $textProperty))
                 ->andWhere(Criteria::expr()->eq('type', 'literal'));
-            foreach($mediaValues->matching($criteria) as $mediaValueTextProperty) {
+            foreach ($mediaValues->matching($criteria) as $mediaValueTextProperty) {
                 if ('clear' === $action) {
                     $mediaValues->removeElement($mediaValueTextProperty);
                 } else {
