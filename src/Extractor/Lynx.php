@@ -30,7 +30,7 @@ class Lynx implements ExtractorInterface
         }
         // Must use -force_html or lynx will return markup for files without an
         // .html extension: https://bugs.launchpad.net/ubuntu/+source/lynx/+bug/1112568
-        $commandArgs = [$commandPath, '-dump', '-nolist', '-force_html', escapeshellarg($filePath)];
+        $commandArgs = [$commandPath, '-dump', '-nolist', '-force_html', '-display_charset=utf-8', escapeshellarg($filePath)];
         $command = implode(' ', $commandArgs);
         return $this->cli->execute($command);
     }
