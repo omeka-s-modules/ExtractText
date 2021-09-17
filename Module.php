@@ -135,6 +135,11 @@ class Module extends AbstractModule
             'form.add_elements',
             function (Event $event) {
                 $form = $event->getTarget();
+                $resourceType = $form->getOption('resource_type');
+                if ('item' !== $resourceType) {
+                    // This is not an item batch update form.
+                    return;
+                }
                 $valueOptions = [
                     'clear' => 'Clear text', // @translate
                     '' => '[No action]', // @translate
