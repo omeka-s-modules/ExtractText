@@ -6,6 +6,7 @@ use DOMDocument;
 use Laminas\Log\Logger;
 use Omeka\Stdlib\Message;
 use XMLReader;
+use XSLTProcessor;
 
 /**
  * Use php standard extensions Xml/XmlReader to extract text.
@@ -43,9 +44,11 @@ class Xml implements ExtractorInterface
             return false;
         }
 
+        // TODO The language is extractable, but not managed by the module.
+
         $mediaType = $this->getMediaTypeXml($filePath);
         $mainType = str_replace(['application/', 'text/', '+', 'xml', 'vnd.'], ['', '', '', '', ''], $mediaType);
-        $xslPath = dirname(__DIR__, 2) . '/data/extractors/xml-' . $mainType . '.xsl';
+        $xslPath = dirname(__DIR__, 2) . '/data/extractors/xml-' . $mainType . '.xslt';
         $text = file_exists($xslPath) && filesize($xslPath) && is_readable($filePath)
             ? $this->extractViaXsl($filePath, $xslPath, $options)
             : $this->extractViaDom($filePath, $options);
@@ -166,7 +169,38 @@ class Xml implements ExtractorInterface
         return $mediaTypeIdentifiers[$type] ?? null;
     }
 
+    /**
+     * @param string $filePath The xml file should be checked for well-formed.
+     */
     protected function extractViaDom(string $filePath, array $options): ?string
+    {
+        $domXml = $this->domXmlLoad($filePath, $options);
+        return $domXml ? null : $domXml->documentElement->textContent;
+    }
+
+    protected function extractViaXsl(string $filePath, string $xslPath, array $options): ?string
+    {
+        $domXml = $this->domXmlLoad($filePath, $options);
+        $domXsl = $this->domXmlLoad($xslPath, $options);
+        if (!$domXml || !$domXsl) {
+            return null;
+        }
+
+        $proc = new XSLTProcessor();
+        $proc->importStyleSheet($domXsl);
+        $proc->setParameter('', $options);
+        $result = $proc->transformToXml($domXml);
+        return $result === false ? null : $result;
+    }
+
+    /**
+     * Load a xml or xslt file into a Dom document via file system or http.
+     *
+     * @param string $filepath Path of xml file on file system or via http.
+     * @return \DomDocument
+     * @throws \Exception
+     */
+    protected function domXmlLoad(string $filePath, array $options): ?DOMDocument
     {
         try {
             $domXml = new DOMDocument();
@@ -179,11 +213,6 @@ class Xml implements ExtractorInterface
             $this->logger->err($message);
             return null;
         }
-        return $domXml ? null : $domXml->documentElement->textContent;
-    }
-
-    protected function extractViaXsl(string $filePath, array $options): string
-    {
-        return '';
+        return $domXml;
     }
 }
