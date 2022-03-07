@@ -25,6 +25,7 @@ return [
         ],
         'invokables' => [
             'filegetcontents' => ExtractText\Extractor\Filegetcontents::class,
+            'xml' => ExtractText\Extractor\Xml::class,
         ],
         'aliases' => [
             'application/msword' => 'catdoc',
@@ -32,8 +33,10 @@ return [
             'application/rtf' => 'catdoc',
             'application/vnd.oasis.opendocument.text' => 'odt2txt',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx2txt',
+            'application/xml' => 'xml',
             'text/html' => 'lynx',
             'text/plain' => 'filegetcontents',
+            'text/xml' => 'xml',
         ],
     ],
 ];
