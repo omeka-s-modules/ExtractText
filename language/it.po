@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-23 08:30-0400\n"
+"POT-Creation-Date: 2022-12-12 13:24-0500\n"
 "PO-Revision-Date: 2019-01-31 18:34+0000\n"
 "Last-Translator: Giorgio Comai <g@giorgiocomai.eu>, 2019\n"
 "Language-Team: Italian (https://www.transifex.com/omeka/teams/14184/it/)\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: it\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 
 #: Module.php:65
 msgid "Extractor"
@@ -30,18 +30,18 @@ msgstr "Estrattore"
 msgid "Available"
 msgstr "Disponibile"
 
-#: Module.php:205 Module.php:239
+#: Module.php:210 Module.php:244
 msgid "Extract text"
 msgstr "Estrai testo"
 
-#: Module.php:223
+#: Module.php:228
 msgid "Refresh text"
 msgstr "Aggiorna testo"
 
-#: Module.php:241
+#: Module.php:246
 msgid "Clear text"
 msgstr "Cancella testo"
 
-#: Module.php:242
+#: Module.php:247
 msgid "[No action]"
 msgstr "[Nessuna azione]"

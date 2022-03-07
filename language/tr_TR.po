@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-23 08:30-0400\n"
+"POT-Creation-Date: 2022-12-12 13:24-0500\n"
 "PO-Revision-Date: 2019-01-31 18:34+0000\n"
 "Last-Translator: Zubeyir Tercan <zubeyir@gmail.com>, 2019\n"
 "Language-Team: Turkish (Turkey) (https://www.transifex.com/omeka/teams/14184/tr_TR/)\n"
@@ -29,18 +29,18 @@ msgstr "Ayıklayıcı"
 msgid "Available"
 msgstr "Kullanılabilir"
 
-#: Module.php:205 Module.php:239
+#: Module.php:210 Module.php:244
 msgid "Extract text"
 msgstr "Metni ayıkla"
 
-#: Module.php:223
+#: Module.php:228
 msgid "Refresh text"
 msgstr "Metni tazele"
 
-#: Module.php:241
+#: Module.php:246
 msgid "Clear text"
 msgstr "Metni temizle"
 
-#: Module.php:242
+#: Module.php:247
 msgid "[No action]"
 msgstr "[aksiyon yok]"
