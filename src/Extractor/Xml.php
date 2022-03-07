@@ -5,6 +5,7 @@ namespace ExtractText\Extractor;
 use DOMDocument;
 use Laminas\Log\Logger;
 use Omeka\Stdlib\Message;
+use XMLReader;
 
 /**
  * Use php standard extensions Xml/XmlReader to extract text.
@@ -42,20 +43,13 @@ class Xml implements ExtractorInterface
             return false;
         }
 
-        try {
-            $domXml = new DOMDocument();
-            $domXml = $this->load($filePath);
-        } catch (\Exception $e) {
-            $message = new Message(
-                'The file "%s" is not a valid xml or its encoding is different from the one set in the xml root tag.', // @translate
-                basename($filePath)
-            );
-            $this->logger->err($message);
-            $this->logger->err($e);
-            return false;
-        }
-
-        return $domXml->documentElement->textContent;
+        $mediaType = $this->getMediaTypeXml($filePath);
+        $mainType = str_replace(['application/', 'text/', '+', 'xml', 'vnd.'], ['', '', '', '', ''], $mediaType);
+        $xslPath = dirname(__DIR__, 2) . '/data/extractors/xml-' . $mainType . '.xsl';
+        $text = file_exists($xslPath) && filesize($xslPath) && is_readable($filePath)
+            ? $this->extractViaXsl($filePath, $xslPath, $options)
+            : $this->extractViaDom($filePath, $options);
+        return is_null($text) ? false : $text;
     }
 
     /**
@@ -97,5 +91,99 @@ class Xml implements ExtractorInterface
         }
 
         return true;
+    }
+
+    /**
+     * Extract a more precise xml media type when possible.
+     *
+     * @see https://github.com/omeka/omeka-s/pull/1464/files
+     * @see https://gitlab.com/Daniel-KM/Omeka-S-module-XmlViewer/-/blob/master/data/media-types/media-type-identifiers.php
+     * @see https://gitlab.com/Daniel-KM/Omeka-S-module-XmlViewer/-/blob/master/src/File/TempFile.php
+     */
+    protected function getMediaTypeXml(string $filePath): ?string
+    {
+        libxml_clear_errors();
+
+        $reader = new XMLReader();
+        if (!$reader->open($filePath)) {
+            $message = new Message(
+                'File "%s" is not readable.', // @translate
+                basename($filePath)
+            );
+            $this->logger->err($message);
+            return null;
+        }
+
+        $type = null;
+
+        // Don't output error in case of a badly formatted file since there is no logger.
+        while (@$reader->read()) {
+            if ($reader->nodeType === XMLReader::DOC_TYPE) {
+                $type = $reader->name;
+                break;
+            }
+
+            // To be improved or skipped.
+            if ($reader->nodeType === XMLReader::PI
+                && !in_array($reader->name, [
+                    'xml-model',
+                    'xml-stylesheet',
+                    'oxygen',
+                ])
+            ) {
+                $matches = [];
+                if (preg_match('~href="(.+?)"~mi', $reader->value, $matches)) {
+                    $type = $matches[1];
+                    break;
+                }
+            }
+
+            if ($reader->nodeType === XMLReader::ELEMENT) {
+                if ($reader->namespaceURI === 'urn:oasis:names:tc:opendocument:xmlns:office:1.0') {
+                    $type = $reader->getAttributeNs('mimetype', 'urn:oasis:names:tc:opendocument:xmlns:office:1.0');
+                } else {
+                    $type = $reader->namespaceURI ?: $reader->getAttribute('xmlns');
+                }
+                if (!$type) {
+                    $type = $reader->name;
+                }
+                break;
+            }
+        }
+
+        $reader->close();
+
+        $error = libxml_get_last_error();
+        if ($error) {
+            $message = new Message(
+                'Error level %s, code %s, for file "%s", line %s, column %s: %s', // @translate
+                $error->level, $error->code, $error->file, $error->line, $error->column, $error->message
+            );
+            $this->logger->err($message);
+        }
+
+        $mediaTypeIdentifiers = require dirname(__DIR__, 2) . '/data/media-types/media-type-identifiers.php';
+        return $mediaTypeIdentifiers[$type] ?? null;
+    }
+
+    protected function extractViaDom(string $filePath, array $options): ?string
+    {
+        try {
+            $domXml = new DOMDocument();
+            @$domXml->load($filePath);
+        } catch (\Exception $e) {
+            $message = new Message(
+                'The file "%s" is not a valid xml or its encoding is different from the one set in the xml root tag: %s.', // @translate
+                basename($filePath), $e
+            );
+            $this->logger->err($message);
+            return null;
+        }
+        return $domXml ? null : $domXml->documentElement->textContent;
+    }
+
+    protected function extractViaXsl(string $filePath, array $options): string
+    {
+        return '';
     }
 }
