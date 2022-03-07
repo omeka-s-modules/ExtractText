@@ -24,6 +24,7 @@ Once installed and active, this module has the following features:
 - PDF (application/pdf)
 - RTF (application/rtf)
 - TXT (text/plain)
+- XML (application/xml)
 
 Note that some file extensions or media types may be disallowed in your global
 settings.
@@ -54,6 +55,11 @@ Used to extract text from ODT files. Requires [odt2txt](https://linux.die.net/ma
 
 Used to extract text from PDF files. Requires [pdftotext](https://linux.die.net/man/1/pdftotext),
 a part of the poppler-utils package.
+
+### xml
+
+Used to extract xml from XML files. No requirements on most servers, else
+install the php extensions "xml" and "xmlreader".
 
 ## Disabling text extraction
 
