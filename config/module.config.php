@@ -22,10 +22,10 @@ return [
             'lynx' => ExtractText\Service\Extractor\LynxFactory::class,
             'odt2txt' => ExtractText\Service\Extractor\Odt2txtFactory::class,
             'pdftotext' => ExtractText\Service\Extractor\PdftotextFactory::class,
+            'xml' => ExtractText\Service\Extractor\XmlFactory::class,
         ],
         'invokables' => [
             'filegetcontents' => ExtractText\Extractor\Filegetcontents::class,
-            'xml' => ExtractText\Extractor\Xml::class,
         ],
         'aliases' => [
             'application/msword' => 'catdoc',
