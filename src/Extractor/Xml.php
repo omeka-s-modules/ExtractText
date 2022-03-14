@@ -87,7 +87,7 @@ class Xml implements ExtractorInterface
         if (count($errors)) {
             $message = new Message(
                 'The file "%s" is not a valid xml or its encoding is different from the one set in the xml root tag: %s', // @translate
-                basename($filePath), array_unique($errors)
+                basename($filePath), implode('; ', $errors)
             );
             $this->logger->err($message);
             return false;
