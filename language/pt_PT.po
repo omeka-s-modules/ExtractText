@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-23 08:30-0400\n"
+"POT-Creation-Date: 2022-11-29 12:17-0500\n"
 "PO-Revision-Date: 2019-01-31 18:34+0000\n"
 "Last-Translator: Bruna Santiago <bruna.santiago@campus.fcsh.unl.pt>, 2020\n"
 "Language-Team: Portuguese (Portugal) (https://www.transifex.com/omeka/teams/14184/pt_PT/)\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: pt_PT\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 
 #: Module.php:65
 msgid "Extractor"
@@ -29,18 +29,18 @@ msgstr "Extractor"
 msgid "Available"
 msgstr "Disponível"
 
-#: Module.php:205 Module.php:239
+#: Module.php:210 Module.php:244
 msgid "Extract text"
 msgstr "Extrair texto"
 
-#: Module.php:223
+#: Module.php:228
 msgid "Refresh text"
 msgstr "Actualizar texto"
 
-#: Module.php:241
+#: Module.php:246
 msgid "Clear text"
 msgstr "Limpar texto"
 
-#: Module.php:242
+#: Module.php:247
 msgid "[No action]"
 msgstr "[Nenhuma acção]"

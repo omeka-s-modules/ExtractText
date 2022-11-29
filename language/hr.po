@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-23 08:30-0400\n"
+"POT-Creation-Date: 2022-11-29 12:17-0500\n"
 "PO-Revision-Date: 2019-01-31 18:34+0000\n"
 "Last-Translator: Angela-Marina Batarelo <angela-marina.batarelo@ericsson.com>, 2021\n"
 "Language-Team: Croatian (https://www.transifex.com/omeka/teams/14184/hr/)\n"
@@ -30,18 +30,18 @@ msgstr "Ekstraktor"
 msgid "Available"
 msgstr "Dostupno"
 
-#: Module.php:205 Module.php:239
+#: Module.php:210 Module.php:244
 msgid "Extract text"
 msgstr "Ekstrahiraj tekst"
 
-#: Module.php:223
+#: Module.php:228
 msgid "Refresh text"
 msgstr "Osvježite tekst"
 
-#: Module.php:241
+#: Module.php:246
 msgid "Clear text"
 msgstr "Očisti tekst"
 
-#: Module.php:242
+#: Module.php:247
 msgid "[No action]"
 msgstr "[Nema akcije]"
