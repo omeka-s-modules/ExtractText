@@ -15,7 +15,7 @@ class Filegetcontents implements ExtractorInterface
 
     public function extract($filePath, array $options = [])
     {
-        $offset = isset($options['offset']) ? $options['offset'] : 0;
+        $offset = $options['offset'] ?? 0;
         if (isset($options['maxlen'])) {
             // file_get_contents() interprets a null maxlen as 0, so we can't
             // set a default maxlen like we can for offset.

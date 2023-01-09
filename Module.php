@@ -123,7 +123,7 @@ class Module extends AbstractModule
                 }
                 $item = $event->getParam('entity');
                 $data = $event->getParam('request')->getContent();
-                $action = isset($data['extract_text_action']) ? $data['extract_text_action'] : 'default';
+                $action = $data['extract_text_action'] ?? 'default';
                 $this->setTextToItem($item, $textProperty, $action);
             }
         );
