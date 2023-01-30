@@ -22,6 +22,7 @@ return [
             'lynx' => ExtractText\Service\Extractor\LynxFactory::class,
             'odt2txt' => ExtractText\Service\Extractor\Odt2txtFactory::class,
             'pdftotext' => ExtractText\Service\Extractor\PdftotextFactory::class,
+            'xml' => ExtractText\Service\Extractor\XmlFactory::class,
         ],
         'invokables' => [
             'filegetcontents' => ExtractText\Extractor\Filegetcontents::class,
@@ -32,8 +33,10 @@ return [
             'application/rtf' => 'catdoc',
             'application/vnd.oasis.opendocument.text' => 'odt2txt',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx2txt',
+            'application/xml' => 'xml',
             'text/html' => 'lynx',
             'text/plain' => 'filegetcontents',
+            'text/xml' => 'xml',
         ],
     ],
 ];
