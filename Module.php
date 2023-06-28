@@ -11,6 +11,7 @@ use Omeka\File\Store\Local;
 use Omeka\Module\AbstractModule;
 use Laminas\EventManager\Event;
 use Laminas\EventManager\SharedEventManagerInterface;
+use Laminas\Mvc\Controller\AbstractController;
 use Laminas\ServiceManager\Exception\ServiceNotFoundException;
 use Laminas\ServiceManager\ServiceLocatorInterface;
 use Laminas\View\Renderer\PhpRenderer;
@@ -81,7 +82,35 @@ class Module extends AbstractModule
         $html .= '
             </tbody>
         </table>';
+
+        $settings = $this->getServiceLocator()->get('Omeka\Settings');
+        $forms = $this->getServiceLocator()->get('FormElementManager');
+        $form = $forms->get(Form\ConfigForm::class);
+        $form->setData([
+            'extracttext_default_is_public' => $settings->get('extracttext_default_is_public', true) ? '1' : '0',
+        ]);
+
+        $html .= $view->formCollection($form);
+
         return $html;
+    }
+
+    public function handleConfigForm(AbstractController $controller)
+    {
+        $forms = $this->getServiceLocator()->get('FormElementManager');
+        $settings = $this->getServiceLocator()->get('Omeka\Settings');
+
+        $form = $forms->get(Form\ConfigForm::class);
+        $form->setData($controller->params()->fromPost());
+        if (!$form->isValid()) {
+            $controller->messenger()->addFormErrors($form);
+            return false;
+        }
+
+        $formData = $form->getData();
+        $settings->set('extracttext_default_is_public', $formData['extracttext_default_is_public'] ? true : false);
+
+        return true;
     }
 
     public function attachListeners(SharedEventManagerInterface $sharedEventManager)
@@ -385,7 +414,8 @@ class Module extends AbstractModule
      */
     public function setTextToTextProperty(Resource $resource, Property $textProperty, $text)
     {
-        $isPublic = true;
+        $settings = $this->getServiceLocator()->get('Omeka\Settings');
+        $isPublic = $settings->get('extracttext_default_is_public', true);
         // Clear values.
         $criteria = Criteria::create()->where(Criteria::expr()->eq('property', $textProperty));
         $resourceValues = $resource->getValues();
