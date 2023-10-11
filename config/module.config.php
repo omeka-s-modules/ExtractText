@@ -29,8 +29,8 @@ return [
         ],
         'aliases' => [
             'application/msword' => 'catdoc',
-            'application/pdf' => 'pdftotext',
             'application/rtf' => 'catdoc',
+            'application/pdf' => 'pdftotext',
             'application/vnd.oasis.opendocument.text' => 'odt2txt',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx2txt',
             'text/html' => 'lynx',

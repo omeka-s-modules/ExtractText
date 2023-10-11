@@ -27,8 +27,8 @@ class Tesseract implements ExtractorInterface
         if ('cli' !== PHP_SAPI) {
             // Only extract when running in PHP CLI (i.e. a background job).
             // This is necessary because Tesseract is a long-running process.
-            // Running it in the browser often results in long wait times and
-            // timeouts.
+            // Running it in the browser will result in long wait times and
+            // server/brower timeouts, notably if done in batches.
             return false;
         }
         $commandPath = $this->cli->getCommandPath('tesseract');

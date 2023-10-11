@@ -57,12 +57,16 @@ class Module extends AbstractModule
 
     public function getConfigForm(PhpRenderer $view)
     {
-        $extractors = $this->getServiceLocator()->get('ExtractText\ExtractorManager');
+        $services = $this->getServiceLocator();
+        $config = $services->get('Config');
+        $mediaTypesMap = $config['extract_text_extractors']['aliases'];
+        $extractors = $services->get('ExtractText\ExtractorManager');
         $html = '
         <table class="tablesaw tablesaw-stack">
             <thead>
             <tr>
                 <th>' . $view->translate('Extractor') . '</th>
+                <th>' . $view->translate('Media types') . '</th>
                 <th>' . $view->translate('Available') . '</th>
             </tr>
             </thead>
@@ -72,11 +76,13 @@ class Module extends AbstractModule
             $isAvailable = $extractor->isAvailable()
                 ? sprintf('<span style="color: green;">%s</span>', $view->translate('Yes'))
                 : sprintf('<span style="color: red;">%s</span>', $view->translate('No'));
+            $mediaTypes = array_keys($mediaTypesMap, $extractorName);
             $html .= sprintf('
             <tr>
                 <td>%s</td>
                 <td>%s</td>
-            </tr>', $extractorName, $isAvailable);
+                <td>%s</td>
+            </tr>', $extractorName, implode('<br>', $mediaTypes), $isAvailable);
         }
         $html .= '
             </tbody>
@@ -110,8 +116,8 @@ class Module extends AbstractModule
         /*
          * After hydrating an item, aggregate its media's text and set it to the
          * item. This happens when creating and updating the item. Refreshes the
-         * media's text first if the "extract_text_refresh" flag is passed in
-         * the request.
+         * media's text first if the "extract_text_action" flag is passed in the
+         * request.
          */
         $sharedEventManager->attach(
             'Omeka\Api\Adapter\ItemAdapter',
@@ -221,11 +227,16 @@ class Module extends AbstractModule
                 $view = $event->getTarget();
                 $store = $this->getServiceLocator()->get('Omeka\File\Store');
                 $refreshRadioButton = null;
+                $refreshJobRadioButton = null;
                 if ($store instanceof Local) {
                     // Files must be stored locally to refresh extracted text.
                     $refreshRadioButton = sprintf(
                         '<label><input type="radio" name="extract_text_action" value="refresh">%s</label>',
                         $view->translate('Refresh text')
+                    );
+                    $refreshJobRadioButton = sprintf(
+                        '<label><input type="radio" name="extract_text_action" value="refresh_job">%s</label>',
+                        $view->translate('Refresh text (job)')
                     );
                 }
                 $html = sprintf('
@@ -236,6 +247,7 @@ class Module extends AbstractModule
                         </div>
                         <div class="inputs">
                             %s
+                            %s
                             <label><input type="radio" name="extract_text_action" value="clear">%s</label>
                             <label><input type="radio" name="extract_text_action" value="" checked="checked">%s</label>
                         </div>
@@ -243,6 +255,7 @@ class Module extends AbstractModule
                 </div>',
                 $view->translate('Extract text'),
                 $refreshRadioButton,
+                $refreshJobRadioButton,
                 $view->translate('Clear text'),
                 $view->translate('[No action]'));
                 echo $html;
@@ -305,6 +318,7 @@ class Module extends AbstractModule
      *
      * - default: aggregates text from child media and set it to the item.
      * - refresh: same as default but (re)extracts text from files first.
+     * - refresh_job: runs the refresh action in a background job (use for long-running processes).
      * - clear: clears all extracted text from item and child media.
      *
      * @param Item $item
@@ -313,7 +327,16 @@ class Module extends AbstractModule
      */
     public function setTextToItem(Item $item, Property $textProperty, $action = 'default')
     {
-        $store = $this->getServiceLocator()->get('Omeka\File\Store');
+        $services = $this->getServiceLocator();
+        if ('refresh_job' === $action) {
+            $services->get('Omeka\Job\Dispatcher')->dispatch('ExtractText\Job\SetTextToItem', [
+                'item_id' => $item->getId(),
+                'text_property_id' => $textProperty->getId(),
+                'action' => 'refresh',
+            ]);
+            return;
+        }
+        $store = $services->get('Omeka\File\Store');
         $itemTexts = [];
         $itemMedia = $item->getMedia();
         // Order by position in case the position was changed on this request.
