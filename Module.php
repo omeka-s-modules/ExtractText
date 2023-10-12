@@ -58,15 +58,12 @@ class Module extends AbstractModule
     public function getConfigForm(PhpRenderer $view)
     {
         $services = $this->getServiceLocator();
-        $config = $services->get('Config');
-        $mediaTypesMap = $config['extract_text_extractors']['aliases'];
         $extractors = $services->get('ExtractText\ExtractorManager');
         $html = '
         <table class="tablesaw tablesaw-stack">
             <thead>
             <tr>
                 <th>' . $view->translate('Extractor') . '</th>
-                <th>' . $view->translate('Media types') . '</th>
                 <th>' . $view->translate('Available') . '</th>
             </tr>
             </thead>
@@ -76,13 +73,11 @@ class Module extends AbstractModule
             $isAvailable = $extractor->isAvailable()
                 ? sprintf('<span style="color: green;">%s</span>', $view->translate('Yes'))
                 : sprintf('<span style="color: red;">%s</span>', $view->translate('No'));
-            $mediaTypes = array_keys($mediaTypesMap, $extractorName);
             $html .= sprintf('
             <tr>
                 <td>%s</td>
                 <td>%s</td>
-                <td>%s</td>
-            </tr>', $extractorName, implode('<br>', $mediaTypes), $isAvailable);
+            </tr>', $extractorName, $isAvailable);
         }
         $html .= '
             </tbody>
