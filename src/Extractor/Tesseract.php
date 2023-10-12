@@ -24,11 +24,6 @@ class Tesseract implements ExtractorInterface
 
     public function extract($filePath, array $options = [])
     {
-        if ('cli' !== PHP_SAPI) {
-            // Tesseract is a long-running process. It's only available when run
-            // in PHP CLI (i.e. background job)
-            return false;
-        }
         $commandPath = $this->cli->getCommandPath('tesseract');
         if (false === $commandPath) {
             return false;

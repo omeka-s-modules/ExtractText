@@ -222,16 +222,16 @@ class Module extends AbstractModule
                 $view = $event->getTarget();
                 $store = $this->getServiceLocator()->get('Omeka\File\Store');
                 $refreshRadioButton = null;
-                $refreshJobRadioButton = null;
+                $refreshBackgroundRadioButton = null;
                 if ($store instanceof Local) {
                     // Files must be stored locally to refresh extracted text.
                     $refreshRadioButton = sprintf(
                         '<label><input type="radio" name="extract_text_action" value="refresh">%s</label>',
                         $view->translate('Refresh text')
                     );
-                    $refreshJobRadioButton = sprintf(
-                        '<label><input type="radio" name="extract_text_action" value="refresh_job">%s</label>',
-                        $view->translate('Refresh text (job)')
+                    $refreshBackgroundRadioButton = sprintf(
+                        '<label><input type="radio" name="extract_text_action" value="refresh_background">%s</label>',
+                        $view->translate('Refresh text (background)')
                     );
                 }
                 $html = sprintf('
@@ -250,7 +250,7 @@ class Module extends AbstractModule
                 </div>',
                 $view->translate('Extract text'),
                 $refreshRadioButton,
-                $refreshJobRadioButton,
+                $refreshBackgroundRadioButton,
                 $view->translate('Clear text'),
                 $view->translate('[No action]'));
                 echo $html;
@@ -313,7 +313,7 @@ class Module extends AbstractModule
      *
      * - default: aggregates text from child media and set it to the item.
      * - refresh: same as default but (re)extracts text from files first.
-     * - refresh_job: runs the refresh action in a background job (use for long-running processes).
+     * - refresh_background: runs the refresh action in a background job.
      * - clear: clears all extracted text from item and child media.
      *
      * @param Item $item
@@ -323,11 +323,11 @@ class Module extends AbstractModule
     public function setTextToItem(Item $item, Property $textProperty, $action = 'default')
     {
         $services = $this->getServiceLocator();
-        if ('refresh_job' === $action) {
-            $services->get('Omeka\Job\Dispatcher')->dispatch('ExtractText\Job\SetTextToItem', [
+        if ('refresh_background' === $action && 'cli' !== PHP_SAPI) {
+            // Note that we only dispatch the job when not already in the background.
+            $jobDispatcher = $services->get('Omeka\Job\Dispatcher');
+            $jobDispatcher->dispatch('ExtractText\Job\RefreshItemText', [
                 'item_id' => $item->getId(),
-                'text_property_id' => $textProperty->getId(),
-                'action' => 'refresh',
             ]);
             return;
         }
@@ -376,11 +376,18 @@ class Module extends AbstractModule
             // Fall back on PHP's magic.mime file.
             $mediaType = mime_content_type($filePath);
         }
-        $extractors = $this->getServiceLocator()->get('ExtractText\ExtractorManager');
+        $services = $this->getServiceLocator();
+        $extractors = $services->get('ExtractText\ExtractorManager');
         try {
             $extractor = $extractors->get($mediaType);
         } catch (ServiceNotFoundException $e) {
             // No extractor assigned to the media type.
+            return false;
+        }
+        $config = $services->get('Config');
+        $backgroundOnly = $config['extract_text']['background_only'];
+        if (in_array(get_class($extractor), $backgroundOnly) && 'cli' !== PHP_SAPI) {
+            // The extractor can not run in the foreground.
             return false;
         }
         if (!$extractor->isAvailable()) {

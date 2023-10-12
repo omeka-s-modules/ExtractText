@@ -44,4 +44,9 @@ return [
             'image/bmp' => 'tesseract',
         ],
     ],
+    'extract_text' => [
+        'background_only' => [
+            ExtractText\Extractor\Tesseract::class,
+        ],
+    ],
 ];

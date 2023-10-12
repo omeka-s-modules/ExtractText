@@ -84,17 +84,32 @@ disable extraction for TXT (text/plain) files, add the following:
 ],
 ```
 
-## Long-running extractors
+## Long-running extraction
 
-Some extractors take a long time to process. Running them in the browser will often
-result in long wait times and server/brower timeouts, especially if done in synchronous
-batches. Because of this, long-running extractors do not automatically extract text
-when adding a media. For these, users have two options to extract text:
+Extractors may take a long time to process. Running them in the browser could result
+in long wait times and server/brower timeouts, especially if done in synchronous
+batches. For processes that take too long, users have two options to extract text:
 
-- In the item edit page, by selecting "Refresh text (job)".
+- In the item edit page, by selecting "Refresh text (background)".
 - In the item browse page, by selecting the "Edit all" batch action.
 
-At this time, the only long-running extractor is tesseract.
+Both of these options will run text extraction in a background job.
+
+You can set an extractor to only run in the background using the "extract_text/
+background_only" config in your local configuration file (config/local.config.php).
+For example, if you want to set the pdftotext extractor as background only, add
+the following:
+
+```php
+  'extract_text' => [
+      'background_only' => [
+          ExtractText\Extractor\Pdftotext::class,
+      ],
+  ],
+```
+
+Note that extractors set as background only will not automatically extract text
+when adding a media. You will need to extract text using the two options above.
 
 # Copyright
 
