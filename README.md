@@ -25,6 +25,16 @@ Once installed and active, this module has the following features:
 - RTF (application/rtf)
 - TXT (text/plain)
 
+Images files are supported by tesseract if compiled with the [required libraries](https://tesseract-ocr.github.io/tessdoc/InputFormats.html):
+
+- BMP (image/bmp)
+- GIF (image/gif)
+- JP2 (image/jp2)
+- JPG (image/jpeg)
+- PNG (image/png)
+- TIFF (image/tiff)
+- WEBP (image/webp)
+
 Note that some file extensions or media types may be disallowed in your global
 settings.
 
@@ -55,6 +65,10 @@ Used to extract text from ODT files. Requires [odt2txt](https://linux.die.net/ma
 Used to extract text from PDF files. Requires [pdftotext](https://linux.die.net/man/1/pdftotext),
 a part of the poppler-utils package.
 
+### tesseract
+
+Used to extract text from image files (OCR). Requires [tesseract](https://tesseract-ocr.github.io/tessdoc/Command-Line-Usage.html).
+
 ## Disabling text extraction
 
 You can disable text extraction for a specific media type by setting the media
@@ -69,6 +83,18 @@ disable extraction for TXT (text/plain) files, add the following:
     ],
 ],
 ```
+
+## Long-running extractors
+
+Some extractors take a long time to process. Running them in the browser will often
+result in long wait times and server/brower timeouts, especially if done in synchronous
+batches. Because of this, long-running extractors do not automatically extract text
+when adding a media. For these, users have two options to extract text:
+
+- In the item edit page, by selecting "Refresh text (job)".
+- In the item browse page, by selecting the "Edit all" batch action.
+
+At this time, the only long-running extractor is tesseract.
 
 # Copyright
 
