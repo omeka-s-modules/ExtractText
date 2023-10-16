@@ -140,7 +140,7 @@ the following:
 ```php
   'extract_text' => [
       'background_only' => [
-          ExtractText\Extractor\Pdftotext::class,
+          'pdftotext',
       ],
   ],
 ```
