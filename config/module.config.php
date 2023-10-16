@@ -46,7 +46,22 @@ return [
     ],
     'extract_text' => [
         'background_only' => [
-            ExtractText\Extractor\Tesseract::class,
+            'tesseract',
+        ],
+        'options' => [
+            'filegetcontents' => [
+                'offset' => 0, // The offset where the reading starts
+                'maxlen' => null, // Maximum length of data read
+            ],
+            'pdftotext' => [
+                'f' => null, // First page to convert
+                'l' => null, // Last page to convert
+            ],
+            'tesseract' => [
+                'l' => 'eng', // Language/script
+                'psm' => 3, // Page segmentation mode
+                'oem' => 3, // OCR Engine mode
+            ],
         ],
     ],
 ];

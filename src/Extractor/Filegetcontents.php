@@ -8,6 +8,11 @@ namespace ExtractText\Extractor;
  */
 class Filegetcontents implements ExtractorInterface
 {
+    public function getName()
+    {
+        return 'filegetcontents';
+    }
+
     public function isAvailable()
     {
         return true;

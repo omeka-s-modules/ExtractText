@@ -363,10 +363,9 @@ class Module extends AbstractModule
      *
      * @param string $filePath
      * @param string $mediaType
-     * @param array $options
      * @return string|false
      */
-    public function extractText($filePath, $mediaType = null, array $options = [])
+    public function extractText($filePath, $mediaType = null)
     {
         if (!@is_file($filePath)) {
             // The file doesn't exist.
@@ -386,7 +385,7 @@ class Module extends AbstractModule
         }
         $config = $services->get('Config');
         $backgroundOnly = $config['extract_text']['background_only'];
-        if (in_array(get_class($extractor), $backgroundOnly) && 'cli' !== PHP_SAPI) {
+        if (in_array($extractor->getName(), $backgroundOnly) && 'cli' !== PHP_SAPI) {
             // The extractor can not run in the foreground.
             return false;
         }
@@ -394,6 +393,7 @@ class Module extends AbstractModule
             // The extractor is unavailable.
             return false;
         }
+        $options = $config['extract_text']['options'][$extractor->getName()] ?? [];
         // extract() should return false if it cannot extract text.
         return $extractor->extract($filePath, $options);
     }

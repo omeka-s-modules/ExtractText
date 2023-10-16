@@ -69,6 +69,43 @@ a part of the poppler-utils package.
 
 Used to extract text from image files (OCR). Requires [tesseract](https://tesseract-ocr.github.io/tessdoc/Command-Line-Usage.html).
 
+## Configuring extractors
+
+Some extractors allow you to configure how they extract text. You can configure
+them using the "extract_text/options" config in your local configuration file
+(config/local.config.php). For example, if you want to always skip the first page
+of PDFs, add the following:
+
+```php
+'extract_text' => [
+    'options' => [
+        'pdftotext' => [
+            'f' => 2,
+        ],
+    ],
+],
+```
+
+The following extractors have configuration options:
+
+### filegetcontents
+
+- offset: The offset where the reading starts (default 0)
+- maxlen: Maximum length of data read (default null)
+
+### pdftotext
+
+- f: First page to convert (default null)
+- l: Last page to convert (default null)
+
+### tesseract
+
+- l: Language/script (default 'eng')
+- psm: Page segmentation mode (default 3)
+- oem: OCR Engine mode (default 3)
+
+See the [tesseract manual](https://github.com/tesseract-ocr/tesseract/blob/main/doc/tesseract.1.asc) for more info.
+
 ## Disabling text extraction
 
 You can disable text extraction for a specific media type by setting the media
