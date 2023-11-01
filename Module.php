@@ -11,6 +11,7 @@ use Omeka\File\Store\Local;
 use Omeka\Module\AbstractModule;
 use Laminas\EventManager\Event;
 use Laminas\EventManager\SharedEventManagerInterface;
+use \Laminas\Form\Element;
 use Laminas\ServiceManager\Exception\ServiceNotFoundException;
 use Laminas\ServiceManager\ServiceLocatorInterface;
 use Laminas\View\Renderer\PhpRenderer;
@@ -109,10 +110,8 @@ class Module extends AbstractModule
             }
         );
         /*
-         * After hydrating an item, aggregate its media's text and set it to the
-         * item. This happens when creating and updating the item. Refreshes the
-         * media's text first if the "extract_text_action" flag is passed in the
-         * request.
+         * Perform text extraxt actions after hydrating an item. This happens
+         * when creating and updating the item.
          */
         $sharedEventManager->attach(
             'Omeka\Api\Adapter\ItemAdapter',
@@ -125,11 +124,29 @@ class Module extends AbstractModule
                 $item = $event->getParam('entity');
                 $data = $event->getParam('request')->getContent();
                 $action = $data['extract_text_action'] ?? 'default';
-                $this->setTextToItem($item, $textProperty, $action);
+                $this->extractTextItem($item, $textProperty, $action);
             }
         );
         /*
-         * Add the ExtractText radio buttons to the resource batch update form.
+         * Perform text extraxt actions after hydrating a media. This happens
+         * when creating and updating the item.
+         */
+        $sharedEventManager->attach(
+            'Omeka\Api\Adapter\MediaAdapter',
+            'api.hydrate.post',
+            function (Event $event) {
+                $textProperty = $this->getTextProperty();
+                if (false === $textProperty) {
+                    return;
+                }
+                $media = $event->getParam('entity');
+                $data = $event->getParam('request')->getContent();
+                $action = $data['extract_text_action'] ?? 'default';
+                $this->extractTextMedia($media, $textProperty, $action);
+            }
+        );
+        /*
+         * Add the ExtractText select menu to the resource batch update form.
          */
         $sharedEventManager->attach(
             'Omeka\Form\ResourceBatchUpdateForm',
@@ -141,21 +158,19 @@ class Module extends AbstractModule
                     // This is not an item batch update form.
                     return;
                 }
-                $valueOptions = [
-                    'clear' => 'Clear text', // @translate
-                    '' => '[No action]', // @translate
-                ];
+                $valueOptions = ['clear' => 'Clear text']; // @translate;
                 $store = $this->getServiceLocator()->get('Omeka\File\Store');
                 if ($store instanceof Local) {
                     // Files must be stored locally to refresh extracted text.
-                    $valueOptions = ['refresh' => 'Refresh text'] + $valueOptions; // @translate
+                    $valueOptions['refresh'] = 'Refresh text'; // @translate
                 }
                 $form->add([
                     'name' => 'extract_text_action',
-                    'type' => 'Laminas\Form\Element\Radio',
+                    'type' => Element\Select::class,
                     'options' => [
                         'label' => 'Extract text', // @translate
                         'value_options' => $valueOptions,
+                        'empty_option' => '[No action]', // @translate
                     ],
                     'attributes' => [
                         'value' => '',
@@ -165,7 +180,7 @@ class Module extends AbstractModule
             }
         );
         /*
-         * Don't require the ExtractText radio buttons in the resource batch
+         * Don't require the ExtractText select menu in the resource batch
          * update form.
          */
         $sharedEventManager->attach(
@@ -200,62 +215,146 @@ class Module extends AbstractModule
             }
         );
         /*
-         * Add an "Extract text" tab to the item edit page.
+         * Add an "Extract text" tab to the item and media edit pages.
          */
-        $sharedEventManager->attach(
-            'Omeka\Controller\Admin\Item',
-            'view.edit.section_nav',
-            function (Event $event) {
-                $view = $event->getTarget();
-                $sectionNavs = $event->getParam('section_nav');
-                $sectionNavs['extract-text'] = $view->translate('Extract text');
-                $event->setParam('section_nav', $sectionNavs);
-            }
-        );
-        /*
-         * Add an "Extract text" section to the item edit page.
-         */
-        $sharedEventManager->attach(
-            'Omeka\Controller\Admin\Item',
-            'view.edit.form.after',
-            function (Event $event) {
-                $view = $event->getTarget();
-                $store = $this->getServiceLocator()->get('Omeka\File\Store');
-                $refreshRadioButton = null;
-                $refreshBackgroundRadioButton = null;
-                if ($store instanceof Local) {
-                    // Files must be stored locally to refresh extracted text.
-                    $refreshRadioButton = sprintf(
-                        '<label><input type="radio" name="extract_text_action" value="refresh">%s</label>',
-                        $view->translate('Refresh text')
-                    );
-                    $refreshBackgroundRadioButton = sprintf(
-                        '<label><input type="radio" name="extract_text_action" value="refresh_background">%s</label>',
-                        $view->translate('Refresh text (background)')
-                    );
+        $adapters = ['Omeka\Controller\Admin\Item', 'Omeka\Controller\Admin\Media'];
+        foreach ($adapters as $adapter) {
+            $sharedEventManager->attach(
+                $adapter,
+                'view.edit.section_nav',
+                function (Event $event) {
+                    $view = $event->getTarget();
+                    $sectionNavs = $event->getParam('section_nav');
+                    $sectionNavs['extract-text'] = $view->translate('Extract text');
+                    $event->setParam('section_nav', $sectionNavs);
                 }
-                $html = sprintf('
-                <div id="extract-text" class="section">
-                    <div class="field">
-                        <div class="field-meta">
-                            <label for="extract_text_action">%s</label>
-                        </div>
-                        <div class="inputs">
-                            %s
-                            %s
-                            <label><input type="radio" name="extract_text_action" value="clear">%s</label>
-                            <label><input type="radio" name="extract_text_action" value="" checked="checked">%s</label>
-                        </div>
-                    </div>
-                </div>',
-                $view->translate('Extract text'),
-                $refreshRadioButton,
-                $refreshBackgroundRadioButton,
-                $view->translate('Clear text'),
-                $view->translate('[No action]'));
-                echo $html;
+            );
+        }
+
+        /*
+         * Add an "Extract text" section to the item and media edit pages.
+         */
+        $controllers = ['Omeka\Controller\Admin\Item', 'Omeka\Controller\Admin\Media'];
+        foreach ($controllers as $controller) {
+            $sharedEventManager->attach(
+                $controller,
+                'view.edit.form.after',
+                function (Event $event) {
+                    $view = $event->getTarget();
+                    $store = $this->getServiceLocator()->get('Omeka\File\Store');
+                    $select = new Element\Select('extract_text_action');
+                    $valueOptions = ['clear' => 'Clear text']; // @translate
+                    if ($store instanceof Local) {
+                        $valueOptions['refresh'] = 'Refresh text'; // @translate
+                        $valueOptions['refresh_background'] = 'Refresh text (background)'; // @translate
+                    }
+                    $select->setLabel('Extract text'); // @translate
+                    $select->setValueOptions($valueOptions);
+                    $select->setEmptyOption('[No action]'); // @translate
+                    echo sprintf('<div id="extract-text" class="section">%s</div>', $view->formRow($select));
+                }
+            );
+        }
+    }
+
+    /**
+     * Primary method to extract text from one item and its media.
+     *
+     * There are three actions this method can perform:
+     *
+     * - default: aggregates text from child media and sets it to the item.
+     * - refresh: same as default but (re)extracts text from files first.
+     * - refresh_background: runs the refresh action in a background job.
+     * - clear: same as default but clears all extracted text from item and child media first.
+     *
+     * @param Item $item
+     * @param Property $textProperty
+     * @param string $action default|refresh|refresh_background|clear
+     */
+    public function extractTextItem(Item $item, Property $textProperty, $action = 'default')
+    {
+        $services = $this->getServiceLocator();
+        $store = $services->get('Omeka\File\Store');
+        if ('refresh_background' === $action) {
+            // Note that we only dispatch the job when a) not already in the
+            // background and b) when files are stored locally.
+            if (('cli' !== PHP_SAPI) && ($store instanceof Local)) {
+                $jobDispatcher = $services->get('Omeka\Job\Dispatcher');
+                $jobDispatcher->dispatch('ExtractText\Job\RefreshItemText', [
+                    'item_id' => $item->getId(),
+                ]);
             }
-        );
+            return;
+        }
+        $itemTexts = [];
+        $itemMedia = $item->getMedia();
+        // Order by position in case the position was changed on this request.
+        $criteria = Criteria::create()->orderBy(['position' => Criteria::ASC]);
+        foreach ($itemMedia->matching($criteria) as $media) {
+            // Files must be stored locally to refresh extracted text.
+            if (('refresh' === $action) && ($store instanceof Local)) {
+                $filePath = $store->getLocalPath(sprintf('original/%s', $media->getFilename()));
+                $this->setTextToMedia($filePath, $media, $textProperty);
+            }
+            $mediaValues = $media->getValues();
+            $criteria = Criteria::create()
+                ->where(Criteria::expr()->eq('property', $textProperty))
+                ->andWhere(Criteria::expr()->eq('type', 'literal'));
+            foreach ($mediaValues->matching($criteria) as $mediaValueTextProperty) {
+                if ('clear' === $action) {
+                    $mediaValues->removeElement($mediaValueTextProperty);
+                } else {
+                    $itemTexts[] = $mediaValueTextProperty->getValue();
+                }
+            }
+        }
+        $itemText = trim(implode(PHP_EOL, $itemTexts));
+        $this->setTextToTextProperty($item, $textProperty, ('' === $itemText) ? null : $itemText);
+    }
+
+    /**
+     * Primary method to extract text from one media.
+     *
+     * There are three actions this method can perform:
+     *
+     * - default: aggregates text from the parent item's media and sets it to the item.
+     * - refresh: same as default but (re)extracts text from the file first.
+     * - refresh_background: runs the refresh action in a background job.
+     * - clear: same as default but clears the extracted text from the media first.
+     *
+     * @param Media $media
+     * @param Property $textProperty
+     * @param string $action default|refresh|refresh_background|clear
+     */
+    public function extractTextMedia(Media $media, Property $textProperty, $action = 'default')
+    {
+        $services = $this->getServiceLocator();
+        $store = $services->get('Omeka\File\Store');
+        if ('refresh_background' === $action) {
+            // Note that we only dispatch the job when a) not already in the
+            // background and b) when files are stored locally.
+            if (('cli' !== PHP_SAPI) && ($store instanceof Local)) {
+                $jobDispatcher = $services->get('Omeka\Job\Dispatcher');
+                $jobDispatcher->dispatch('ExtractText\Job\RefreshMediaText', [
+                    'media_id' => $media->getId(),
+                ]);
+            }
+            return;
+        }
+        if (('refresh' === $action) && ($store instanceof Local)) {
+            $filePath = $store->getLocalPath(sprintf('original/%s', $media->getFilename()));
+            $this->setTextToMedia($filePath, $media, $textProperty);
+        }
+        if ('clear' === $action) {
+            $mediaValues = $media->getValues();
+            $criteria = Criteria::create()
+                ->where(Criteria::expr()->eq('property', $textProperty))
+                ->andWhere(Criteria::expr()->eq('type', 'literal'));
+            foreach ($mediaValues->matching($criteria) as $mediaValueTextProperty) {
+                $mediaValues->removeElement($mediaValueTextProperty);
+            }
+        }
+        $this->extractTextItem($media->getItem(), $textProperty, 'default');
     }
 
     /**
@@ -304,58 +403,6 @@ class Module extends AbstractModule
         }
         $text = trim($text);
         $this->setTextToTextProperty($media, $textProperty, ('' === $text) ? null : $text);
-    }
-
-    /**
-     * Set extracted text to an item.
-     *
-     * There are three actions this method can perform:
-     *
-     * - default: aggregates text from child media and set it to the item.
-     * - refresh: same as default but (re)extracts text from files first.
-     * - refresh_background: runs the refresh action in a background job.
-     * - clear: clears all extracted text from item and child media.
-     *
-     * @param Item $item
-     * @param Property $textProperty
-     * @param string $action default|refresh|clear
-     */
-    public function setTextToItem(Item $item, Property $textProperty, $action = 'default')
-    {
-        $services = $this->getServiceLocator();
-        if ('refresh_background' === $action && 'cli' !== PHP_SAPI) {
-            // Note that we only dispatch the job when not already in the background.
-            $jobDispatcher = $services->get('Omeka\Job\Dispatcher');
-            $jobDispatcher->dispatch('ExtractText\Job\RefreshItemText', [
-                'item_id' => $item->getId(),
-            ]);
-            return;
-        }
-        $store = $services->get('Omeka\File\Store');
-        $itemTexts = [];
-        $itemMedia = $item->getMedia();
-        // Order by position in case the position was changed on this request.
-        $criteria = Criteria::create()->orderBy(['position' => Criteria::ASC]);
-        foreach ($itemMedia->matching($criteria) as $media) {
-            // Files must be stored locally to refresh extracted text.
-            if (('refresh' === $action) && ($store instanceof Local)) {
-                $filePath = $store->getLocalPath(sprintf('original/%s', $media->getFilename()));
-                $this->setTextToMedia($filePath, $media, $textProperty);
-            }
-            $mediaValues = $media->getValues();
-            $criteria = Criteria::create()
-                ->where(Criteria::expr()->eq('property', $textProperty))
-                ->andWhere(Criteria::expr()->eq('type', 'literal'));
-            foreach ($mediaValues->matching($criteria) as $mediaValueTextProperty) {
-                if ('clear' === $action) {
-                    $mediaValues->removeElement($mediaValueTextProperty);
-                } else {
-                    $itemTexts[] = $mediaValueTextProperty->getValue();
-                }
-            }
-        }
-        $itemText = trim(implode(PHP_EOL, $itemTexts));
-        $this->setTextToTextProperty($item, $textProperty, ('' === $itemText) ? null : $itemText);
     }
 
     /**
