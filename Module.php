@@ -11,7 +11,8 @@ use Omeka\File\Store\Local;
 use Omeka\Module\AbstractModule;
 use Laminas\EventManager\Event;
 use Laminas\EventManager\SharedEventManagerInterface;
-use \Laminas\Form\Element;
+use Laminas\Form\Element;
+use Laminas\Mvc\Controller\AbstractController;
 use Laminas\ServiceManager\Exception\ServiceNotFoundException;
 use Laminas\ServiceManager\ServiceLocatorInterface;
 use Laminas\View\Renderer\PhpRenderer;
@@ -60,12 +61,15 @@ class Module extends AbstractModule
     {
         $services = $this->getServiceLocator();
         $extractors = $services->get('ExtractText\ExtractorManager');
+        $settings = $services->get('Omeka\Settings');
+        $disabledExtractors = $settings->get('extract_text_disabled_extractors', []);
         $html = '
         <table class="tablesaw tablesaw-stack">
             <thead>
             <tr>
                 <th>' . $view->translate('Extractor') . '</th>
                 <th>' . $view->translate('Available') . '</th>
+                <th>' . $view->translate('Disable') . '</th>
             </tr>
             </thead>
             <tbody>';
@@ -74,16 +78,27 @@ class Module extends AbstractModule
             $isAvailable = $extractor->isAvailable()
                 ? sprintf('<span style="color: green;">%s</span>', $view->translate('Yes'))
                 : sprintf('<span style="color: red;">%s</span>', $view->translate('No'));
+            $disableCheckbox = new Element\Checkbox(sprintf('extract_text_disabled_extractors[%s]', $extractorName));
+            $disableCheckbox->setValue(isset($disabledExtractors[$extractorName]) && $disabledExtractors[$extractorName] ? '1' : '0');
             $html .= sprintf('
             <tr>
                 <td>%s</td>
                 <td>%s</td>
-            </tr>', $extractorName, $isAvailable);
+                <td>%s</td>
+            </tr>', $extractorName, $isAvailable, $view->formElement($disableCheckbox));
         }
         $html .= '
             </tbody>
         </table>';
         return $html;
+    }
+
+    public function handleConfigForm(AbstractController $controller)
+    {
+        $settings = $this->getServiceLocator()->get('Omeka\Settings');
+        $postData = $controller->params()->fromPost();
+        $settings->set('extract_text_disabled_extractors', $postData['extract_text_disabled_extractors']);
+        return true;
     }
 
     public function attachListeners(SharedEventManagerInterface $sharedEventManager)
@@ -428,6 +443,12 @@ class Module extends AbstractModule
             $extractor = $extractors->get($mediaType);
         } catch (ServiceNotFoundException $e) {
             // No extractor assigned to the media type.
+            return false;
+        }
+        $settings = $services->get('Omeka\Settings');
+        $disabledExtractors = $settings->get('extract_text_disabled_extractors', []);
+        if (isset($disabledExtractors[$extractor->getName()]) && $disabledExtractors[$extractor->getName()]) {
+            // The extractor is disabled in config settings.
             return false;
         }
         $config = $services->get('Config');
