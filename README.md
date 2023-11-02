@@ -12,8 +12,10 @@ Once installed and active, this module has the following features:
   media text (in order) and set the text to the item.
 - When editing an item or batch editing items, the user can choose to refresh or
   clear the extracted text.
-- The user can view the module configuration page to see which extractors are
-  available on their system.
+- When editing a media, the user can choose to refresh or clear the extracted
+  text.
+- The user can view the module configuration page a) to see which extractors are
+  available on their system and b) to disable individual extractors.
 
 ## Supported file formats:
 
@@ -86,6 +88,19 @@ of PDFs, add the following:
 ],
 ```
 
+Another example: if you want to use English and German together for OCR, add the
+following:
+
+```php
+'extract_text' => [
+    'options' => [
+        'tesseract' => [
+            'l' => 'eng+deu',
+        ],
+    ],
+],
+```
+
 The following extractors have configuration options:
 
 ### filegetcontents
@@ -107,6 +122,9 @@ The following extractors have configuration options:
 See the [tesseract manual](https://github.com/tesseract-ocr/tesseract/blob/main/doc/tesseract.1.asc) for more info.
 
 ## Disabling text extraction
+
+You can disable text extraction for individual extractors in the module config
+page.
 
 You can disable text extraction for a specific media type by setting the media
 type alias to `null` in the "extract_text_extractors" service config in your
