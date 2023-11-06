@@ -1,6 +1,7 @@
 <?php
 namespace ExtractText;
 
+use Composer\Semver\Comparator;
 use Doctrine\Common\Collections\Criteria;
 use Omeka\Entity\Item;
 use Omeka\Entity\Media;
@@ -57,19 +58,30 @@ class Module extends AbstractModule
         }
     }
 
+    public function upgrade($oldVersion, $newVersion, ServiceLocatorInterface $services)
+    {
+        if (Comparator::lessThan($oldVersion, '2.0.0')) {
+            $settings = $services->get('Omeka\Settings');
+            $settings->set('extract_text_disabled_extractors', []);
+            $settings->set('extract_text_background_extractors', ['tesseract' => '1']);
+        }
+    }
+
     public function getConfigForm(PhpRenderer $view)
     {
         $services = $this->getServiceLocator();
         $extractors = $services->get('ExtractText\ExtractorManager');
         $settings = $services->get('Omeka\Settings');
         $disabledExtractors = $settings->get('extract_text_disabled_extractors', []);
+        $backgroundExtractors = $settings->get('extract_text_background_extractors', []);
         $html = '
         <table class="tablesaw tablesaw-stack">
             <thead>
             <tr>
                 <th>' . $view->translate('Extractor') . '</th>
                 <th>' . $view->translate('Available') . '</th>
-                <th>' . $view->translate('Disable') . '</th>
+                <th>' . $view->translate('Disabled') . '</th>
+                <th>' . $view->translate('Background only') . '</th>
             </tr>
             </thead>
             <tbody>';
@@ -80,12 +92,20 @@ class Module extends AbstractModule
                 : sprintf('<span style="color: red;">%s</span>', $view->translate('No'));
             $disableCheckbox = new Element\Checkbox(sprintf('extract_text_disabled_extractors[%s]', $extractorName));
             $disableCheckbox->setValue(isset($disabledExtractors[$extractorName]) && $disabledExtractors[$extractorName] ? '1' : '0');
+            $backgroundCheckbox = new Element\Checkbox(sprintf('extract_text_background_extractors[%s]', $extractorName));
+            $backgroundCheckbox->setValue(isset($backgroundExtractors[$extractorName]) && $backgroundExtractors[$extractorName] ? '1' : '0');
             $html .= sprintf('
-            <tr>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-            </tr>', $extractorName, $isAvailable, $view->formElement($disableCheckbox));
+                <tr>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                </tr>',
+                $extractorName,
+                $isAvailable,
+                $view->formElement($disableCheckbox),
+                $view->formElement($backgroundCheckbox),
+            );
         }
         $html .= '
             </tbody>
@@ -98,6 +118,7 @@ class Module extends AbstractModule
         $settings = $this->getServiceLocator()->get('Omeka\Settings');
         $postData = $controller->params()->fromPost();
         $settings->set('extract_text_disabled_extractors', $postData['extract_text_disabled_extractors']);
+        $settings->set('extract_text_background_extractors', $postData['extract_text_background_extractors']);
         return true;
     }
 
@@ -451,9 +472,8 @@ class Module extends AbstractModule
             // The extractor is disabled in config settings.
             return false;
         }
-        $config = $services->get('Config');
-        $backgroundOnly = $config['extract_text']['background_only'];
-        if (in_array($extractor->getName(), $backgroundOnly) && 'cli' !== PHP_SAPI) {
+        $backgroundExtractors = $settings->get('extract_text_background_extractors', []);
+        if (isset($backgroundExtractors[$extractor->getName()]) && $backgroundExtractors[$extractor->getName()] && 'cli' !== PHP_SAPI) {
             // The extractor can not run in the foreground.
             return false;
         }

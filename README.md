@@ -14,8 +14,10 @@ Once installed and active, this module has the following features:
   clear the extracted text.
 - When editing a media, the user can choose to refresh or clear the extracted
   text.
-- The user can view the module configuration page a) to see which extractors are
-  available on their system and b) to disable individual extractors.
+- On the module configuration page:
+  - The user can see which extractors are available on their system.
+  - The user can disable individual extractors.
+  - The user can set individual extractors to only run in the background.
 
 ## Supported file formats:
 
@@ -71,6 +73,39 @@ a part of the poppler-utils package.
 
 Used to extract text from image files (OCR). Requires [tesseract](https://tesseract-ocr.github.io/tessdoc/Command-Line-Usage.html).
 
+## Disabling text extraction
+
+You can disable text extraction for individual extractors in the module config
+page.
+
+You can disable text extraction for a specific media type by setting the media
+type alias to `null` in the "extract_text_extractors" service config in your
+local configuration file (config/local.config.php). For example, if you want to
+disable extraction for TXT (text/plain) files, add the following:
+
+```php
+'extract_text_extractors' => [
+    'aliases' => [
+        'text/plain' => null,
+    ],
+],
+```
+
+## Extracting text in the background
+
+Extractors may take a long time to process. Running them in the browser could result
+in long wait times and server/brower timeouts, especially if done in synchronous
+batches. For processes that take too long, users have two options to extract text:
+
+- In the item edit page, by selecting "Refresh text (background)".
+- In the item browse page, by selecting the "Edit all" batch action.
+
+Both of these options will run text extraction in a background job.
+
+You can set individual extractors to only run in the background in the module config
+page. Note that extractors set as background only will not automatically extract text
+when adding a media. You will need to extract text using the two options above.
+
 ## Configuring extractors
 
 Some extractors allow you to configure how they extract text. You can configure
@@ -120,51 +155,6 @@ The following extractors have configuration options:
 - oem: OCR Engine mode (default 3)
 
 See the [tesseract manual](https://github.com/tesseract-ocr/tesseract/blob/main/doc/tesseract.1.asc) for more info.
-
-## Disabling text extraction
-
-You can disable text extraction for individual extractors in the module config
-page.
-
-You can disable text extraction for a specific media type by setting the media
-type alias to `null` in the "extract_text_extractors" service config in your
-local configuration file (config/local.config.php). For example, if you want to
-disable extraction for TXT (text/plain) files, add the following:
-
-```php
-'extract_text_extractors' => [
-    'aliases' => [
-        'text/plain' => null,
-    ],
-],
-```
-
-## Long-running extraction
-
-Extractors may take a long time to process. Running them in the browser could result
-in long wait times and server/brower timeouts, especially if done in synchronous
-batches. For processes that take too long, users have two options to extract text:
-
-- In the item edit page, by selecting "Refresh text (background)".
-- In the item browse page, by selecting the "Edit all" batch action.
-
-Both of these options will run text extraction in a background job.
-
-You can set an extractor to only run in the background using the "extract_text/
-background_only" config in your local configuration file (config/local.config.php).
-For example, if you want to set the pdftotext extractor as background only, add
-the following:
-
-```php
-  'extract_text' => [
-      'background_only' => [
-          'pdftotext',
-      ],
-  ],
-```
-
-Note that extractors set as background only will not automatically extract text
-when adding a media. You will need to extract text using the two options above.
 
 # Copyright
 

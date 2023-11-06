@@ -45,9 +45,6 @@ return [
         ],
     ],
     'extract_text' => [
-        'background_only' => [
-            'tesseract',
-        ],
         'options' => [
             'filegetcontents' => [
                 'offset' => 0, // The offset where the reading starts
