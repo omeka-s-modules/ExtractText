@@ -14,10 +14,10 @@ Once installed and active, this module has the following features:
   clear the extracted text.
 - When editing a media, the user can choose to refresh or clear the extracted
   text.
-- On the module configuration page:
-  - The user can see which extractors are available on their system.
-  - The user can disable individual extractors.
-  - The user can set individual extractors to only run in the background.
+- On the module configuration page, the user can:
+  - See which extractors are available on their system.
+  - Disable individual extractors.
+  - Set individual extractors to only run in the background.
 
 ## Supported file formats:
 
