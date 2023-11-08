@@ -58,22 +58,17 @@ class Module extends AbstractModule
         }
     }
 
-    public function upgrade($oldVersion, $newVersion, ServiceLocatorInterface $services)
-    {
-        if (Comparator::lessThan($oldVersion, '2.0.0')) {
-            $settings = $services->get('Omeka\Settings');
-            $settings->set('extract_text_disabled_extractors', []);
-            $settings->set('extract_text_background_extractors', ['tesseract' => '1']);
-        }
-    }
-
     public function getConfigForm(PhpRenderer $view)
     {
         $services = $this->getServiceLocator();
         $extractors = $services->get('ExtractText\ExtractorManager');
         $settings = $services->get('Omeka\Settings');
+        $config = $services->get('Config');
+
         $disabledExtractors = $settings->get('extract_text_disabled_extractors', []);
         $backgroundExtractors = $settings->get('extract_text_background_extractors', []);
+        $backgroundOnlyConfig = $config['extract_text']['background_only'];
+
         $html = '
         <table class="tablesaw tablesaw-stack">
             <thead>
@@ -93,7 +88,12 @@ class Module extends AbstractModule
             $disableCheckbox = new Element\Checkbox(sprintf('extract_text_disabled_extractors[%s]', $extractorName));
             $disableCheckbox->setValue(isset($disabledExtractors[$extractorName]) && $disabledExtractors[$extractorName] ? '1' : '0');
             $backgroundCheckbox = new Element\Checkbox(sprintf('extract_text_background_extractors[%s]', $extractorName));
-            $backgroundCheckbox->setValue(isset($backgroundExtractors[$extractorName]) && $backgroundExtractors[$extractorName] ? '1' : '0');
+            if (in_array($extractorName, $backgroundOnlyConfig)) {
+                $backgroundCheckbox->setValue('1');
+                $backgroundCheckbox->setAttribute('disabled', true);
+            } else {
+                $backgroundCheckbox->setValue(isset($backgroundExtractors[$extractorName]) && $backgroundExtractors[$extractorName] ? '1' : '0');
+            }
             $html .= sprintf('
                 <tr>
                     <td>%s</td>
@@ -466,22 +466,31 @@ class Module extends AbstractModule
             // No extractor assigned to the media type.
             return false;
         }
+        $extractorName = $extractor->getName();
         $settings = $services->get('Omeka\Settings');
+        $config = $services->get('Config');
         $disabledExtractors = $settings->get('extract_text_disabled_extractors', []);
-        if (isset($disabledExtractors[$extractor->getName()]) && $disabledExtractors[$extractor->getName()]) {
+        if (isset($disabledExtractors[$extractorName]) && $disabledExtractors[$extractorName]) {
             // The extractor is disabled in config settings.
             return false;
         }
         $backgroundExtractors = $settings->get('extract_text_background_extractors', []);
-        if (isset($backgroundExtractors[$extractor->getName()]) && $backgroundExtractors[$extractor->getName()] && 'cli' !== PHP_SAPI) {
-            // The extractor can not run in the foreground.
-            return false;
+        $backgroundOnlyConfig = $config['extract_text']['background_only'];
+        if ('cli' !== PHP_SAPI) {
+            // This extractor is currently being run in the foreground.
+            if (isset($backgroundExtractors[$extractorName]) && $backgroundExtractors[$extractorName]) {
+                // An administrator set this extractor to not run in the foreground.
+                return false;
+            } elseif (in_array($extractorName, $backgroundOnlyConfig)) {
+                // The module config set this extractor to never run in the foreground.
+                return false;
+            }
         }
         if (!$extractor->isAvailable()) {
             // The extractor is unavailable.
             return false;
         }
-        $options = $config['extract_text']['options'][$extractor->getName()] ?? [];
+        $options = $config['extract_text']['options'][$extractorName] ?? [];
         // extract() should return false if it cannot extract text.
         return $extractor->extract($filePath, $options);
     }

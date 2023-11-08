@@ -98,12 +98,29 @@ in long wait times and server/brower timeouts, especially if done in synchronous
 batches. For processes that take too long, users have two options to extract text:
 
 - In the item edit page, by selecting "Refresh text (background)".
-- In the item browse page, by selecting the "Edit all" batch action.
+- In the item browse page, by selecting the "Edit all" batch action (perhaps after making a search).
 
 Both of these options will run text extraction in a background job.
 
-You can set individual extractors to only run in the background in the module config
-page. Note that extractors set as background only will not automatically extract text
+You can set individual extractors to only run in the background on the module config
+page. Note that extractors can be set to never run in the foreground (see below).
+These extractors cannot be toggled on/off on the module config page. They are always
+set to "background only."
+
+You can set an extractor to never run in the foreground using the "extract_text/
+background_only" config in your local configuration file (config/local.config.php).
+For example, if you want to set the pdftotext extractor as background only, add
+the following:
+
+```php
+  'extract_text' => [
+      'background_only' => [
+          'pdftotext',
+      ],
+  ],
+```
+
+Note that extractors set as background only will not automatically extract text
 when adding a media. You will need to extract text using the two options above.
 
 ## Configuring extractors
