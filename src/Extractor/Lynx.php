@@ -17,6 +17,11 @@ class Lynx implements ExtractorInterface
         $this->cli = $cli;
     }
 
+    public function getName()
+    {
+        return 'lynx';
+    }
+
     public function isAvailable()
     {
         return (bool) $this->cli->getCommandPath('lynx');

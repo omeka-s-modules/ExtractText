@@ -17,6 +17,11 @@ class Pdftotext implements ExtractorInterface
         $this->cli = $cli;
     }
 
+    public function getName()
+    {
+        return 'pdftotext';
+    }
+
     public function isAvailable()
     {
         return (bool) $this->cli->getCommandPath('pdftotext');

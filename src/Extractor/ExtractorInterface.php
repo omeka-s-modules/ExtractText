@@ -7,6 +7,13 @@ namespace ExtractText\Extractor;
 interface ExtractorInterface
 {
     /**
+     * Return this extractor's configured, resolvable name.
+     *
+     * @return string
+     */
+    public function getName();
+
+    /**
      * Is this extractor available?
      *
      * @return bool

@@ -22,18 +22,46 @@ return [
             'lynx' => ExtractText\Service\Extractor\LynxFactory::class,
             'odt2txt' => ExtractText\Service\Extractor\Odt2txtFactory::class,
             'pdftotext' => ExtractText\Service\Extractor\PdftotextFactory::class,
+            'tesseract' => ExtractText\Service\Extractor\TesseractFactory::class,
         ],
         'invokables' => [
             'filegetcontents' => ExtractText\Extractor\Filegetcontents::class,
         ],
         'aliases' => [
             'application/msword' => 'catdoc',
-            'application/pdf' => 'pdftotext',
             'application/rtf' => 'catdoc',
+            'application/pdf' => 'pdftotext',
             'application/vnd.oasis.opendocument.text' => 'odt2txt',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx2txt',
             'text/html' => 'lynx',
             'text/plain' => 'filegetcontents',
+            'image/png' => 'tesseract',
+            'image/jpeg' => 'tesseract',
+            'image/tiff' => 'tesseract',
+            'image/jp2' => 'tesseract',
+            'image/gif' => 'tesseract',
+            'image/webp' => 'tesseract',
+            'image/bmp' => 'tesseract',
+        ],
+    ],
+    'extract_text' => [
+        'background_only' => [
+            'tesseract',
+        ],
+        'options' => [
+            'filegetcontents' => [
+                'offset' => 0, // The offset where the reading starts
+                'maxlen' => null, // Maximum length of data read
+            ],
+            'pdftotext' => [
+                'f' => null, // First page to convert
+                'l' => null, // Last page to convert
+            ],
+            'tesseract' => [
+                'l' => 'eng', // Language/script
+                'psm' => 3, // Page segmentation mode
+                'oem' => 3, // OCR Engine mode
+            ],
         ],
     ],
 ];

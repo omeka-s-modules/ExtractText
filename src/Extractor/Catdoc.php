@@ -17,6 +17,11 @@ class Catdoc implements ExtractorInterface
         $this->cli = $cli;
     }
 
+    public function getName()
+    {
+        return 'catdoc';
+    }
+
     public function isAvailable()
     {
         return (bool) $this->cli->getCommandPath('catdoc');
