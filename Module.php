@@ -1,7 +1,6 @@
 <?php
 namespace ExtractText;
 
-use Composer\Semver\Comparator;
 use Doctrine\Common\Collections\Criteria;
 use Omeka\Entity\Item;
 use Omeka\Entity\Media;

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-12 13:24-0500\n"
+"POT-Creation-Date: 2023-11-27 08:50-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,26 +17,38 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: Module.php:65
+#: Module.php:76
 msgid "Extractor"
 msgstr ""
 
-#: Module.php:66
+#: Module.php:77
 msgid "Available"
 msgstr ""
 
-#: Module.php:210 Module.php:244
+#: Module.php:78
+msgid "Disabled"
+msgstr ""
+
+#: Module.php:79
+msgid "Background only"
+msgstr ""
+
+#: Module.php:264
 msgid "Extract text"
 msgstr ""
 
-#: Module.php:228
-msgid "Refresh text"
-msgstr ""
-
-#: Module.php:246
+#: Module.php:197 Module.php:282
 msgid "Clear text"
 msgstr ""
 
-#: Module.php:247
+#: Module.php:201 Module.php:284
+msgid "Refresh text"
+msgstr ""
+
+#: Module.php:209 Module.php:289
 msgid "[No action]"
+msgstr ""
+
+#: Module.php:285
+msgid "Refresh text (background)"
 msgstr ""
