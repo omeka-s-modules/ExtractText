@@ -26,6 +26,7 @@ return [
         ],
         'invokables' => [
             'filegetcontents' => ExtractText\Extractor\Filegetcontents::class,
+            'domdocument' => ExtractText\Extractor\Domdocument::class,
         ],
         'aliases' => [
             'application/msword' => 'catdoc',
@@ -35,6 +36,9 @@ return [
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx2txt',
             'text/html' => 'lynx',
             'text/plain' => 'filegetcontents',
+            'text/xml' => 'domdocument',
+            'application/xml' => 'domdocument',
+            'application/tei+xml' => 'domdocument',
             'image/png' => 'tesseract',
             'image/jpeg' => 'tesseract',
             'image/tiff' => 'tesseract',
