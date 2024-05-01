@@ -28,6 +28,7 @@ Once installed and active, this module has the following features:
 - PDF (application/pdf)
 - RTF (application/rtf)
 - TXT (text/plain)
+- XML (application/xml)
 
 Images files are supported by tesseract if compiled with the [required libraries](https://tesseract-ocr.github.io/tessdoc/InputFormats.html):
 
@@ -51,6 +52,10 @@ Used to extract text from DOC and RTF files. Requires [catdoc](https://linux.die
 ### docx2txt
 
 Used to extract text from DOCX files. Requires [docx2txt](http://docx2txt.sourceforge.net/).
+
+### domdocument
+
+Used to extract text from XML files. No requirements.
 
 ### filegetcontents
 
