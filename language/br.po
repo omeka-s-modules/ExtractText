@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-27 08:50-0500\n"
+"POT-Creation-Date: 2024-06-20 11:04-0400\n"
 "PO-Revision-Date: 2019-01-31 18:34+0000\n"
 "Last-Translator: Irriep Nala Novram <per.morvan.bzh29@gmail.com>, 2019\n"
 "Language-Team: Breton (https://app.transifex.com/omeka/teams/14184/br/)\n"
@@ -21,38 +21,38 @@ msgstr ""
 "Language: br\n"
 "Plural-Forms: nplurals=5; plural=((n%10 == 1) && (n%100 != 11) && (n%100 !=71) && (n%100 !=91) ? 0 :(n%10 == 2) && (n%100 != 12) && (n%100 !=72) && (n%100 !=92) ? 1 :(n%10 ==3 || n%10==4 || n%10==9) && (n%100 < 10 || n% 100 > 19) && (n%100 < 70 || n%100 > 79) && (n%100 < 90 || n%100 > 99) ? 2 :(n != 0 && n % 1000000 == 0) ? 3 : 4);\n"
 
-#: Module.php:76
+#: Module.php:75
 msgid "Extractor"
 msgstr "Eztenner"
 
-#: Module.php:77
+#: Module.php:76
 msgid "Available"
 msgstr "Hegerz"
 
-#: Module.php:78
+#: Module.php:77
 msgid "Disabled"
 msgstr ""
 
-#: Module.php:79
+#: Module.php:78
 msgid "Background only"
 msgstr ""
 
-#: Module.php:264
+#: Module.php:263
 msgid "Extract text"
 msgstr "Eztennañ an destenn"
 
-#: Module.php:197 Module.php:282
+#: Module.php:196 Module.php:281
 msgid "Clear text"
 msgstr "Dilemel an destenn"
 
-#: Module.php:201 Module.php:284
+#: Module.php:200 Module.php:283
 msgid "Refresh text"
 msgstr "Freskaat an destenn"
 
-#: Module.php:209 Module.php:289
+#: Module.php:208 Module.php:288
 msgid "[No action]"
 msgstr "[Ober ebet]"
 
-#: Module.php:285
+#: Module.php:284
 msgid "Refresh text (background)"
 msgstr ""

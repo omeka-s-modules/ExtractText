@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-27 08:50-0500\n"
+"POT-Creation-Date: 2024-06-20 11:04-0400\n"
 "PO-Revision-Date: 2019-01-31 18:34+0000\n"
 "Last-Translator: Tzvetan Tzvetanski <ceibg.org@gmail.com>, 2021\n"
 "Language-Team: Bulgarian (Bulgaria) (https://app.transifex.com/omeka/teams/14184/bg_BG/)\n"
@@ -21,38 +21,38 @@ msgstr ""
 "Language: bg_BG\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: Module.php:76
+#: Module.php:75
 msgid "Extractor"
 msgstr "Екстрактор"
 
-#: Module.php:77
+#: Module.php:76
 msgid "Available"
 msgstr "Налично"
 
-#: Module.php:78
+#: Module.php:77
 msgid "Disabled"
 msgstr ""
 
-#: Module.php:79
+#: Module.php:78
 msgid "Background only"
 msgstr ""
 
-#: Module.php:264
+#: Module.php:263
 msgid "Extract text"
 msgstr "Извличане на текст"
 
-#: Module.php:197 Module.php:282
+#: Module.php:196 Module.php:281
 msgid "Clear text"
 msgstr "Изчистване на текста"
 
-#: Module.php:201 Module.php:284
+#: Module.php:200 Module.php:283
 msgid "Refresh text"
 msgstr "Опресняване на текста"
 
-#: Module.php:209 Module.php:289
+#: Module.php:208 Module.php:288
 msgid "[No action]"
 msgstr "[Не се предприемат действия]"
 
-#: Module.php:285
+#: Module.php:284
 msgid "Refresh text (background)"
 msgstr ""
